@@ -26,6 +26,24 @@ function render() {
         😐 ${joke.mehs}
         <button data-id="${joke.id}" data-type="meh">Meh</button>
       </div>
+
+      <div class="riffs">
+        <strong>Riffs</strong>
+        <div class="riff-list">
+          ${(joke.riffs || []).map(r =>
+            `<div class="riff"><em>${r.author}:</em> ${r.text}</div>`
+          ).join("")}
+        </div>
+        <input
+          data-riff-author="${joke.id}"
+          placeholder="Your name"
+        />
+        <input
+          data-riff-text="${joke.id}"
+          placeholder="Add a riff..."
+        />
+        <button data-riff-btn="${joke.id}">Add Riff</button>
+      </div>
     `;
 
     jokeFeed.appendChild(div);
@@ -43,7 +61,8 @@ postBtn.addEventListener("click", () => {
     text,
     author,
     laughs: 0,
-    mehs: 0
+    mehs: 0,
+    riffs: []
   });
 
   jokeInput.value = "";
@@ -52,16 +71,39 @@ postBtn.addEventListener("click", () => {
 });
 
 jokeFeed.addEventListener("click", e => {
-  if (!e.target.dataset.id) return;
+  const id = Number(
+    e.target.dataset.id ||
+    e.target.dataset.riffBtn
+  );
 
-  const id = Number(e.target.dataset.id);
-  const type = e.target.dataset.type;
+  if (!id) return;
 
   const joke = jokes.find(j => j.id === id);
   if (!joke) return;
 
-  if (type === "laugh") joke.laughs++;
-  if (type === "meh") joke.mehs++;
+  // Voting
+  if (e.target.dataset.type === "laugh") joke.laughs++;
+  if (e.target.dataset.type === "meh") joke.mehs++;
+
+  // Riffing
+  if (e.target.dataset.riffBtn) {
+    const authorInput = document.querySelector(
+      `input[data-riff-author="${id}"]`
+    );
+    const textInput = document.querySelector(
+      `input[data-riff-text="${id}"]`
+    );
+
+    const riffText = textInput.value.trim();
+    if (!riffText) return;
+
+    joke.riffs.push({
+      author: authorInput.value.trim() || "Anonymous",
+      text: riffText
+    });
+
+    textInput.value = "";
+  }
 
   save();
   render();
