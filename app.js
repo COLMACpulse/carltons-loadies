@@ -59,12 +59,17 @@ function render() {
         <strong>Riffs</strong>
         <div class="riff-list">
           ${(joke.riffs || []).map(r =>
-            `<div class="riff"><em>${r.author}:</em> ${r.text}</div>`
+            `<div><em>${r.author}:</em> ${r.text}</div>`
           ).join("")}
         </div>
         <input data-riff-author="${joke.id}" placeholder="Your name" />
         <input data-riff-text="${joke.id}" placeholder="Add a riff..." />
         <button data-riff-btn="${joke.id}">Add Riff</button>
+      </div>
+
+      <div style="margin-top:10px;">
+        💸 ${joke.tips || 0}
+        <button data-tip="${joke.id}">Tip the writer</button>
       </div>
     `;
 
@@ -84,7 +89,8 @@ postBtn.addEventListener("click", () => {
     author,
     laughs: 0,
     mehs: 0,
-    riffs: []
+    riffs: [],
+    tips: 0
   });
 
   jokeInput.value = "";
@@ -95,7 +101,8 @@ postBtn.addEventListener("click", () => {
 jokeFeed.addEventListener("click", e => {
   const id = Number(
     e.target.dataset.id ||
-    e.target.dataset.riffBtn
+    e.target.dataset.riffBtn ||
+    e.target.dataset.tip
   );
 
   if (!id) return;
@@ -109,15 +116,20 @@ jokeFeed.addEventListener("click", e => {
   if (e.target.dataset.riffBtn) {
     const a = document.querySelector(`input[data-riff-author="${id}"]`);
     const t = document.querySelector(`input[data-riff-text="${id}"]`);
-    const riffText = t.value.trim();
-    if (!riffText) return;
+    const text = t.value.trim();
+    if (!text) return;
 
     joke.riffs.push({
       author: a.value.trim() || "Anonymous",
-      text: riffText
+      text
     });
 
     t.value = "";
+  }
+
+  if (e.target.dataset.tip) {
+    joke.tips++;
+    alert("Tip registered. Payments coming later.");
   }
 
   save();
