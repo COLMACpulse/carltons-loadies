@@ -4,15 +4,42 @@ const authorInput = document.getElementById("author");
 const jokeInput = document.getElementById("jokeText");
 
 let jokes = JSON.parse(localStorage.getItem("jokeMarket")) || [];
+let sortMode = "top"; // "top" or "new"
 
 function save() {
   localStorage.setItem("jokeMarket", JSON.stringify(jokes));
 }
 
-function render() {
-  jokeFeed.innerHTML = "";
+function score(joke) {
+  return joke.laughs - joke.mehs;
+}
 
-  jokes.forEach(joke => {
+function sortedJokes() {
+  const list = [...jokes];
+  if (sortMode === "top") {
+    list.sort((a, b) => score(b) - score(a));
+  }
+  return list;
+}
+
+function render() {
+  jokeFeed.innerHTML = `
+    <div style="margin-bottom:15px;">
+      <button id="sortTop">Top</button>
+      <button id="sortNew">Newest</button>
+    </div>
+  `;
+
+  document.getElementById("sortTop").onclick = () => {
+    sortMode = "top";
+    render();
+  };
+  document.getElementById("sortNew").onclick = () => {
+    sortMode = "new";
+    render();
+  };
+
+  sortedJokes().forEach(joke => {
     const div = document.createElement("div");
     div.className = "joke";
 
@@ -25,6 +52,7 @@ function render() {
         <button data-id="${joke.id}" data-type="laugh">Funny</button>
         😐 ${joke.mehs}
         <button data-id="${joke.id}" data-type="meh">Meh</button>
+        <strong style="margin-left:10px;">Score: ${score(joke)}</strong>
       </div>
 
       <div class="riffs">
@@ -34,14 +62,8 @@ function render() {
             `<div class="riff"><em>${r.author}:</em> ${r.text}</div>`
           ).join("")}
         </div>
-        <input
-          data-riff-author="${joke.id}"
-          placeholder="Your name"
-        />
-        <input
-          data-riff-text="${joke.id}"
-          placeholder="Add a riff..."
-        />
+        <input data-riff-author="${joke.id}" placeholder="Your name" />
+        <input data-riff-text="${joke.id}" placeholder="Add a riff..." />
         <button data-riff-btn="${joke.id}">Add Riff</button>
       </div>
     `;
@@ -81,28 +103,21 @@ jokeFeed.addEventListener("click", e => {
   const joke = jokes.find(j => j.id === id);
   if (!joke) return;
 
-  // Voting
   if (e.target.dataset.type === "laugh") joke.laughs++;
   if (e.target.dataset.type === "meh") joke.mehs++;
 
-  // Riffing
   if (e.target.dataset.riffBtn) {
-    const authorInput = document.querySelector(
-      `input[data-riff-author="${id}"]`
-    );
-    const textInput = document.querySelector(
-      `input[data-riff-text="${id}"]`
-    );
-
-    const riffText = textInput.value.trim();
+    const a = document.querySelector(`input[data-riff-author="${id}"]`);
+    const t = document.querySelector(`input[data-riff-text="${id}"]`);
+    const riffText = t.value.trim();
     if (!riffText) return;
 
     joke.riffs.push({
-      author: authorInput.value.trim() || "Anonymous",
+      author: a.value.trim() || "Anonymous",
       text: riffText
     });
 
-    textInput.value = "";
+    t.value = "";
   }
 
   save();
