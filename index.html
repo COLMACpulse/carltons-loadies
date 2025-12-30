@@ -1,1 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Carlton’s Loadies — Punch Room</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="wrap">
+    <h1>Carlton’s Loadies</h1>
+    <p class="sub">Punch Room (Closed-Loop • Local-First • User-Owned)</p>
+
+    <section class="card">
+      <h2>Local Vault</h2>
+      <label>Vault passphrase (never sent anywhere)</label>
+      <input id="passphrase" type="password" placeholder="Passphrase" />
+      <div class="row">
+        <button id="unlockBtn">Unlock / Create Vault</button>
+        <button id="lockBtn" disabled>Lock</button>
+      </div>
+      <p class="hint">Your sessions save encrypted in your browser. Export anytime.</p>
+    </section>
+
+    <section class="card">
+      <h2>AI (Optional)</h2>
+      <label>OpenAI API key (stored encrypted in your vault if you choose)</label>
+      <input id="apiKey" type="password" placeholder="sk-..." />
+      <button id="saveKeyBtn" disabled>Save API Key to Vault</button>
+      <p class="hint">
+        Recommended: use a server to protect keys. For GitHub Pages MVP, this is user-supplied only.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Riff</h2>
+      <label>Setup / premise</label>
+      <textarea id="setup" rows="5" placeholder="Type your premise..."></textarea>
+
+      <label>Tone</label>
+      <select id="tone">
+        <option value="dry">Dry</option>
+        <option value="dark">Dark</option>
+        <option value="absurd">Absurd</option>
+        <option value="clean">Clean</option>
+        <option value="roast">Roast</option>
+      </select>
+
+      <div class="row">
+        <button id="riffBtn" disabled>Generate tags</button>
+        <button id="saveBtn" disabled>Save session</button>
+      </div>
+
+      <pre id="output" class="output"></pre>
+
+      <div class="row">
+        <button id="acceptBtn" disabled>Accept</button>
+        <button id="rejectBtn" disabled>Reject</button>
+      </div>
+
+      <p class="hint">Accept/Reject trains *your private profile* only (local weights). No outside learning.</p>
+    </section>
+
+    <section class="card">
+      <h2>Export</h2>
+      <div class="row">
+        <button id="exportBtn" disabled>Export Vault JSON</button>
+        <button id="wipeBtn" disabled>Wipe Vault (danger)</button>
+      </div>
+      <p class="hint">Export is your proof + your portability. Wipe destroys local data.</p>
+    </section>
+
+    <footer class="foot">
+      <small>Closed-Loop Rule: no third-party training data is ingested by this app. Your vault stays local.</small>
+    </footer>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>
 
