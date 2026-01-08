@@ -2,36 +2,889 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Joke Market</title>
+  <title>Carlton’s Loadies — Joke Market</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
+  <meta name="description" content="A local-first joke market: write, riff, vote, credit. Laugh → Credit → Repeat." />
 
+  <style>
+    :root{
+      --bg:#0f0f10;
+      --panel:#151517;
+      --panel2:#1c1c1f;
+      --text:#f4f4f5;
+      --muted:#b6b6bb;
+      --line:#2c2c30;
+      --accent:#f5f5f5;
+      --accentText:#111;
+      --danger:#ff5b5b;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r:12px;
+    }
+
+    * { box-sizing:border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 0;
+      line-height: 1.35;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(15,15,16,.85);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .wrap{
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 18px 16px;
+    }
+
+    .brandRow{
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    h1{
+      margin: 0;
+      font-size: 1.6rem;
+      letter-spacing: .2px;
+    }
+    .tagline{
+      margin: 6px 0 0;
+      color: var(--muted);
+      max-width: 60ch;
+    }
+
+    .pillRow{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+      margin-top: 12px;
+    }
+
+    .pill{
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-size: .9rem;
+      cursor:pointer;
+      user-select:none;
+    }
+    .pill[aria-pressed="true"]{
+      background: var(--accent);
+      color: var(--accentText);
+      border-color: transparent;
+    }
+
+    main .wrap{
+      padding-top: 22px;
+      padding-bottom: 40px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    @media(min-width: 900px){
+      .grid{
+        grid-template-columns: 360px 1fr;
+        align-items: start;
+      }
+    }
+
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .cardHd{
+      padding: 14px 14px 12px;
+      border-bottom: 1px solid var(--line);
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .cardHd h2{
+      margin:0;
+      font-size: 1rem;
+      letter-spacing: .2px;
+    }
+
+    .cardBd{
+      padding: 14px;
+    }
+
+    label{
+      display:block;
+      font-size: .9rem;
+      color: var(--muted);
+      margin: 0 0 6px;
+    }
+
+    input, textarea, select{
+      width:100%;
+      border: 1px solid var(--line);
+      background: var(--panel2);
+      color: var(--text);
+      padding: 11px 12px;
+      border-radius: 10px;
+      outline:none;
+    }
+    textarea{ min-height: 120px; resize: vertical; }
+
+    .row{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .row > *{ flex: 1; min-width: 140px; }
+
+    .btn{
+      border: 1px solid transparent;
+      background: var(--accent);
+      color: var(--accentText);
+      font-weight: 800;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor:pointer;
+      user-select:none;
+    }
+    .btn.secondary{
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      border-color: var(--line);
+    }
+    .btn.danger{
+      background: rgba(255,91,91,.12);
+      color: #ffd7d7;
+      border-color: rgba(255,91,91,.35);
+      font-weight: 700;
+    }
+    .btn:disabled{
+      opacity: .5;
+      cursor:not-allowed;
+    }
+
+    .hint{
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .marketTools{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.02);
+    }
+    .marketTools .left, .marketTools .right{
+      display:flex; gap: 10px; flex-wrap: wrap; align-items:center;
+    }
+    .marketTools input{
+      width: 240px;
+      max-width: 80vw;
+      padding: 9px 10px;
+      border-radius: 999px;
+    }
+
+    .feed{
+      padding: 14px;
+      display:flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .joke{
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(255,255,255,.02);
+      padding: 12px;
+    }
+
+    .jokeTop{
+      display:flex;
+      gap: 10px;
+      justify-content: space-between;
+      align-items:flex-start;
+      flex-wrap: wrap;
+    }
+
+    .jokeText{
+      margin: 0 0 10px;
+      white-space: pre-wrap;
+      font-size: 1rem;
+    }
+
+    .meta{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items:center;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    .badge{
+      font-size: .78rem;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+    }
+
+    .actions{
+      display:flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items:center;
+      margin-top: 10px;
+    }
+    .actions .btn{
+      padding: 8px 10px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: .9rem;
+    }
+
+    details{
+      margin-top: 10px;
+      border-top: 1px dashed rgba(255,255,255,.12);
+      padding-top: 10px;
+    }
+    summary{
+      cursor:pointer;
+      color: var(--muted);
+      user-select:none;
+    }
+    .riffList{
+      margin-top: 10px;
+      display:flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .riffItem{
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: rgba(0,0,0,.18);
+      color: var(--text);
+      font-size: .95rem;
+    }
+    .riffItem em{ color: var(--muted); font-style: normal; font-weight: 700; }
+
+    .toast{
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20,20,22,.96);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events:none;
+      transition: opacity .18s ease;
+      max-width: 92vw;
+      z-index: 999;
+    }
+    .toast.show{ opacity: 1; }
+
+    footer{
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+    }
+    footer .wrap{
+      padding: 18px 16px;
+      display:flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+    .small{ font-size: .9rem; color: var(--muted); }
+  </style>
+</head>
+
+<body>
   <header>
-    <h1>Joke Market</h1>
-    <p>Stick to funny. We handle the splits.</p>
+    <div class="wrap">
+      <div class="brandRow">
+        <div>
+          <h1>Carlton’s Loadies — Joke Market</h1>
+          <p class="tagline">Stick to funny. We handle the splits. <span class="small">(Local-first v0: this browser stores the market.)</span></p>
+        </div>
+
+        <div class="pillRow" aria-label="Mode">
+          <button class="pill" id="modeTop" aria-pressed="true" title="Sort by best score">Top</button>
+          <button class="pill" id="modeNew" aria-pressed="false" title="Sort by newest">Newest</button>
+          <button class="pill" id="modeMine" aria-pressed="false" title="Show only your posts">Mine</button>
+        </div>
+      </div>
+    </div>
   </header>
 
   <main>
-    <section id="submit">
-      <h2>Drop a Joke</h2>
-      <input id="author" placeholder="Your name or alias" />
-      <textarea id="jokeText" placeholder="Your joke goes here..."></textarea>
-      <button id="postBtn">Post Joke</button>
-    </section>
+    <div class="wrap">
+      <div class="grid">
+        <!-- SUBMIT -->
+        <section class="card" aria-labelledby="submitTitle">
+          <div class="cardHd">
+            <h2 id="submitTitle">Drop a Joke</h2>
+            <button class="btn secondary" id="seedBtn" title="Add a few sample jokes (local only)">Seed</button>
+          </div>
 
-    <section id="feed">
-      <h2>The Market</h2>
-      <div id="jokeFeed"></div>
-    </section>
+          <div class="cardBd">
+            <label for="author">Name / Alias</label>
+            <input id="author" placeholder="e.g., BmaC" autocomplete="nickname" />
+
+            <div style="height:10px"></div>
+
+            <label for="jokeText">Joke</label>
+            <textarea id="jokeText" placeholder="One-liner, premise, roast, tag…"></textarea>
+
+            <div style="height:10px"></div>
+
+            <div class="row">
+              <div>
+                <label for="tag">Format</label>
+                <select id="tag">
+                  <option value="one-liner">One-liner</option>
+                  <option value="premise">Premise</option>
+                  <option value="story">Story</option>
+                  <option value="roast">Roast</option>
+                  <option value="tag">Tag</option>
+                  <option value="skit">Skit</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="credit">Credit line</label>
+                <input id="credit" placeholder="Optional (e.g., ‘— written by …’)"/>
+              </div>
+            </div>
+
+            <div style="height:12px"></div>
+
+            <button class="btn" id="postBtn">Post Joke</button>
+
+            <p class="hint">
+              Rules: No hate garbage. No plagiarism. Credit humans. Keep it constructive.
+              <br/>Tip button is a placeholder (no payments in v0).
+            </p>
+
+            <div class="row" style="margin-top:12px;">
+              <button class="btn secondary" id="exportBtn">Export JSON</button>
+              <button class="btn secondary" id="importBtn">Import JSON</button>
+              <button class="btn danger" id="wipeBtn" title="Deletes local market from this browser">Wipe Local Market</button>
+              <input id="importFile" type="file" accept="application/json" style="display:none;" />
+            </div>
+          </div>
+        </section>
+
+        <!-- MARKET -->
+        <section class="card" aria-labelledby="marketTitle">
+          <div class="cardHd">
+            <h2 id="marketTitle">The Market</h2>
+            <button class="btn secondary" id="shareAllBtn" title="Generate a share link for your current market snapshot">Share Snapshot</button>
+          </div>
+
+          <div class="marketTools">
+            <div class="left">
+              <input id="search" placeholder="Search jokes, authors, riffs…" />
+              <select id="filterTag" style="width: 160px; border-radius: 999px; padding: 9px 10px;">
+                <option value="all">All formats</option>
+                <option value="one-liner">One-liner</option>
+                <option value="premise">Premise</option>
+                <option value="story">Story</option>
+                <option value="roast">Roast</option>
+                <option value="tag">Tag</option>
+                <option value="skit">Skit</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div class="right">
+              <span class="small" id="countLabel">0 jokes</span>
+            </div>
+          </div>
+
+          <div class="feed" id="jokeFeed"></div>
+        </section>
+      </div>
+    </div>
   </main>
 
   <footer>
-    <p>Laugh → Credit → Repeat</p>
+    <div class="wrap">
+      <div>Laugh → Credit → Repeat</div>
+      <div class="small">Local-first v0. Later: real accounts, real credits, real splits.</div>
+    </div>
   </footer>
 
-  <script src="app.js"></script>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // ---------- Utilities ----------
+    const $ = (sel) => document.querySelector(sel);
+    const escapeHTML = (str) =>
+      String(str).replace(/[&<>"']/g, (m) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[m]));
+
+    const toastEl = $("#toast");
+    let toastTimer = null;
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1800);
+    }
+
+    function uid() {
+      const k = "jm_user_id_v1";
+      let id = localStorage.getItem(k);
+      if (!id) {
+        id = "u_" + Math.random().toString(36).slice(2) + "_" + Date.now();
+        localStorage.setItem(k, id);
+      }
+      return id;
+    }
+
+    // ---------- Storage ----------
+    const STORE_KEY = "jokeMarket_v2";
+
+    function loadMarket() {
+      // migrate old key if present
+      const old = localStorage.getItem("jokeMarket");
+      if (old && !localStorage.getItem(STORE_KEY)) {
+        try {
+          const parsed = JSON.parse(old);
+          const migrated = (Array.isArray(parsed) ? parsed : []).map(j => ({
+            id: j.id ?? Date.now(),
+            text: String(j.text ?? ""),
+            author: String(j.author ?? "Anonymous"),
+            laughs: Number(j.laughs ?? 0),
+            mehs: Number(j.mehs ?? 0),
+            tips: Number(j.tips ?? 0),
+            riffs: Array.isArray(j.riffs) ? j.riffs.map(r => ({
+              author: String(r.author ?? "Anonymous"),
+              text: String(r.text ?? "")
+            })) : [],
+            tag: "other",
+            credit: "",
+            createdAt: j.id ?? Date.now(),
+            ownerId: ""
+          }));
+          localStorage.setItem(STORE_KEY, JSON.stringify(migrated));
+          localStorage.removeItem("jokeMarket");
+        } catch {}
+      }
+
+      const raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return [];
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveMarket(list) {
+      localStorage.setItem(STORE_KEY, JSON.stringify(list));
+    }
+
+    // ---------- App State ----------
+    const state = {
+      userId: uid(),
+      jokes: loadMarket(),
+      sortMode: "top",   // top | new | mine
+      search: "",
+      filterTag: "all"
+    };
+
+    // ---------- Scoring / Sorting ----------
+    const score = (j) => (j.laughs || 0) - (j.mehs || 0);
+
+    function getVisibleJokes() {
+      let list = [...state.jokes];
+
+      if (state.sortMode === "mine") {
+        list = list.filter(j => j.ownerId === state.userId);
+      }
+
+      if (state.filterTag !== "all") {
+        list = list.filter(j => j.tag === state.filterTag);
+      }
+
+      const q = state.search.trim().toLowerCase();
+      if (q) {
+        list = list.filter(j => {
+          const inJoke = (j.text || "").toLowerCase().includes(q);
+          const inAuthor = (j.author || "").toLowerCase().includes(q);
+          const inCredit = (j.credit || "").toLowerCase().includes(q);
+          const inRiffs = (j.riffs || []).some(r =>
+            (r.text || "").toLowerCase().includes(q) ||
+            (r.author || "").toLowerCase().includes(q)
+          );
+          return inJoke || inAuthor || inCredit || inRiffs;
+        });
+      }
+
+      if (state.sortMode === "top") {
+        list.sort((a, b) => score(b) - score(a) || (b.createdAt || 0) - (a.createdAt || 0));
+      } else {
+        list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+      }
+
+      return list;
+    }
+
+    // ---------- Render ----------
+    const jokeFeed = $("#jokeFeed");
+    const countLabel = $("#countLabel");
+
+    function render() {
+      const list = getVisibleJokes();
+      countLabel.textContent = `${list.length} joke${list.length === 1 ? "" : "s"}`;
+
+      if (!list.length) {
+        jokeFeed.innerHTML = `
+          <div class="joke">
+            <p class="jokeText">No jokes yet. Drop one on the left.</p>
+            <div class="meta">
+              <span class="badge">Tip: hit “Seed” for samples</span>
+              <span class="badge">Or paste your own</span>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      jokeFeed.innerHTML = list.map(j => {
+        const safeText = escapeHTML(j.text || "");
+        const safeAuthor = escapeHTML(j.author || "Anonymous");
+        const safeCredit = escapeHTML(j.credit || "");
+        const safeTag = escapeHTML(j.tag || "other");
+        const created = new Date(j.createdAt || Date.now()).toLocaleString();
+        const riffs = (j.riffs || []).map(r =>
+          `<div class="riffItem"><em>${escapeHTML(r.author || "Anonymous")}:</em> ${escapeHTML(r.text || "")}</div>`
+        ).join("");
+        const isMine = j.ownerId === state.userId;
+
+        return `
+          <article class="joke" data-joke="${j.id}">
+            <div class="jokeTop">
+              <div style="flex:1; min-width: 220px;">
+                <p class="jokeText">${safeText}</p>
+                <div class="meta">
+                  <span>— ${safeAuthor}</span>
+                  ${safeCredit ? `<span class="badge">${safeCredit}</span>` : ""}
+                  <span class="badge">${safeTag}</span>
+                  <span class="badge">Score: ${score(j)}</span>
+                  <span class="badge">${created}</span>
+                  ${isMine ? `<span class="badge" title="This was posted from this browser">Mine</span>` : ""}
+                </div>
+              </div>
+
+              <div class="actions">
+                <button class="btn secondary" data-act="copy" data-id="${j.id}">Copy</button>
+                <button class="btn secondary" data-act="share" data-id="${j.id}">Share</button>
+                <button class="btn" data-act="laugh" data-id="${j.id}">😂 ${j.laughs || 0}</button>
+                <button class="btn secondary" data-act="meh" data-id="${j.id}">😐 ${j.mehs || 0}</button>
+                <button class="btn secondary" data-act="tip" data-id="${j.id}">💸 ${j.tips || 0}</button>
+                ${isMine ? `<button class="btn danger" data-act="del" data-id="${j.id}">Delete</button>` : ""}
+              </div>
+            </div>
+
+            <details>
+              <summary>Riffs (${(j.riffs || []).length})</summary>
+              <div class="riffList">${riffs || `<div class="small">No riffs yet. Add one.</div>`}</div>
+
+              <div class="row" style="margin-top:10px;">
+                <input placeholder="Your name" data-riff-author="${j.id}" />
+                <input placeholder="Add a riff…" data-riff-text="${j.id}" />
+              </div>
+              <div style="margin-top:10px;">
+                <button class="btn secondary" data-act="addriff" data-id="${j.id}">Add Riff</button>
+              </div>
+            </details>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function persistAndRender(msg) {
+      saveMarket(state.jokes);
+      render();
+      if (msg) toast(msg);
+    }
+
+    // ---------- Mode Controls ----------
+    const modeTop = $("#modeTop");
+    const modeNew = $("#modeNew");
+    const modeMine = $("#modeMine");
+
+    function setMode(mode) {
+      state.sortMode = mode;
+      modeTop.setAttribute("aria-pressed", mode === "top");
+      modeNew.setAttribute("aria-pressed", mode === "new");
+      modeMine.setAttribute("aria-pressed", mode === "mine");
+      render();
+    }
+
+    modeTop.addEventListener("click", () => setMode("top"));
+    modeNew.addEventListener("click", () => setMode("new"));
+    modeMine.addEventListener("click", () => setMode("mine"));
+
+    $("#search").addEventListener("input", (e) => {
+      state.search = e.target.value;
+      render();
+    });
+
+    $("#filterTag").addEventListener("change", (e) => {
+      state.filterTag = e.target.value;
+      render();
+    });
+
+    // ---------- Posting ----------
+    $("#postBtn").addEventListener("click", () => {
+      const author = ($("#author").value || "").trim() || "Anonymous";
+      const text = ($("#jokeText").value || "").trim();
+      const tag = $("#tag").value;
+      const credit = ($("#credit").value || "").trim();
+
+      if (!text) return toast("Drop a joke first.");
+
+      const now = Date.now();
+      const joke = {
+        id: now + Math.floor(Math.random() * 1000),
+        text,
+        author,
+        tag,
+        credit,
+        laughs: 0,
+        mehs: 0,
+        tips: 0,
+        riffs: [],
+        createdAt: now,
+        ownerId: state.userId
+      };
+
+      state.jokes.unshift(joke);
+      $("#jokeText").value = "";
+      persistAndRender("Posted.");
+    });
+
+    // Seed local samples
+    $("#seedBtn").addEventListener("click", () => {
+      const now = Date.now();
+      const samples = [
+        { text: "I’m not saying I’m bad at directions… but my GPS once asked *me* for an estimate.", author: "Sample", tag: "one-liner" },
+        { text: "Premise: adulthood is just paying money to feel the same amount of tired in different rooms.", author: "Sample", tag: "premise" },
+        { text: "Roast: You have the confidence of a man who has never once opened his own email attachment.", author: "Sample", tag: "roast" }
+      ].map((s, i) => ({
+        id: now + i,
+        text: s.text,
+        author: s.author,
+        tag: s.tag,
+        credit: "",
+        laughs: 0,
+        mehs: 0,
+        tips: 0,
+        riffs: [],
+        createdAt: now + i,
+        ownerId: ""
+      }));
+
+      state.jokes = [...samples, ...state.jokes];
+      persistAndRender("Seeded (local).");
+    });
+
+    // ---------- Feed actions ----------
+    jokeFeed.addEventListener("click", async (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      const act = btn.dataset.act;
+      const id = Number(btn.dataset.id);
+      if (!act || !id) return;
+
+      const j = state.jokes.find(x => x.id === id);
+      if (!j) return;
+
+      if (act === "laugh") { j.laughs = (j.laughs || 0) + 1; return persistAndRender(); }
+      if (act === "meh") { j.mehs = (j.mehs || 0) + 1; return persistAndRender(); }
+
+      if (act === "tip") {
+        j.tips = (j.tips || 0) + 1;
+        persistAndRender("Tip registered (payments later).");
+        return;
+      }
+
+      if (act === "del") {
+        if (j.ownerId !== state.userId) return toast("Only the original poster can delete (this browser).");
+        state.jokes = state.jokes.filter(x => x.id !== id);
+        return persistAndRender("Deleted.");
+      }
+
+      if (act === "addriff") {
+        const a = document.querySelector(`input[data-riff-author="${id}"]`);
+        const t = document.querySelector(`input[data-riff-text="${id}"]`);
+        const author = (a?.value || "").trim() || "Anonymous";
+        const text = (t?.value || "").trim();
+        if (!text) return toast("Add a riff first.");
+        j.riffs = j.riffs || [];
+        j.riffs.push({ author, text, at: Date.now() });
+        if (t) t.value = "";
+        return persistAndRender("Riff added.");
+      }
+
+      if (act === "copy") {
+        const payload =
+          `${j.text}\n— ${j.author}` +
+          (j.credit ? `\n${j.credit}` : "");
+        try {
+          await navigator.clipboard.writeText(payload);
+          toast("Copied.");
+        } catch {
+          toast("Copy blocked by browser.");
+        }
+        return;
+      }
+
+      if (act === "share") {
+        const pack = btoa(unescape(encodeURIComponent(JSON.stringify({
+          one: { text: j.text, author: j.author, tag: j.tag, credit: j.credit }
+        }))));
+        const url = `${location.origin}${location.pathname}#one=${pack}`;
+        try {
+          await navigator.clipboard.writeText(url);
+          toast("Share link copied.");
+        } catch {
+          prompt("Copy this link:", url);
+        }
+        return;
+      }
+    });
+
+    // ---------- Export / Import ----------
+    $("#exportBtn").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(state.jokes, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "joke-market-export.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast("Exported.");
+    });
+
+    $("#importBtn").addEventListener("click", () => $("#importFile").click());
+
+    $("#importFile").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const parsed = JSON.parse(text);
+        if (!Array.isArray(parsed)) return toast("Invalid JSON format.");
+        state.jokes = parsed;
+        persistAndRender("Imported.");
+      } catch {
+        toast("Import failed.");
+      } finally {
+        e.target.value = "";
+      }
+    });
+
+    $("#wipeBtn").addEventListener("click", () => {
+      const ok = confirm("This deletes the local market from THIS browser only. Continue?");
+      if (!ok) return;
+      state.jokes = [];
+      saveMarket([]);
+      toast("Wiped local market.");
+      render();
+    });
+
+    // Snapshot share (can get large)
+    $("#shareAllBtn").addEventListener("click", async () => {
+      const pack = btoa(unescape(encodeURIComponent(JSON.stringify({ all: state.jokes }))));
+      const url = `${location.origin}${location.pathname}#all=${pack}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast("Snapshot link copied.");
+      } catch {
+        prompt("Copy this snapshot link:", url);
+      }
+    });
+
+    // ---------- Import from URL hash ----------
+    function tryImportFromHash() {
+      const h = location.hash || "";
+      const m = h.match(/#(one|all)=([^&]+)/);
+      if (!m) return;
+      const kind = m[1];
+      const payload = m[2];
+      try {
+        const decoded = JSON.parse(decodeURIComponent(escape(atob(payload))));
+        if (kind === "one" && decoded?.one?.text) {
+          const now = Date.now();
+          const j = decoded.one;
+          state.jokes.unshift({
+            id: now + Math.floor(Math.random() * 1000),
+            text: String(j.text),
+            author: String(j.author || "Anonymous"),
+            tag: String(j.tag || "other"),
+            credit: String(j.credit || ""),
+            laughs: 0, mehs: 0, tips: 0,
+            riffs: [],
+            createdAt: now,
+            ownerId: ""
+          });
+          persistAndRender("Imported 1 joke from link.");
+        }
+        if (kind === "all" && Array.isArray(decoded?.all)) {
+          state.jokes = decoded.all;
+          persistAndRender("Imported snapshot from link.");
+        }
+        history.replaceState(null, "", location.pathname + location.search);
+      } catch {}
+    }
+
+    // ---------- Init ----------
+    tryImportFromHash();
+    render();
+  </script>
 </body>
 </html>
-
