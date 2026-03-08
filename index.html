@@ -4,347 +4,449 @@
   <meta charset="UTF-8" />
   <title>Carlton’s Loadies — Joke Market</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="A local-first joke market: write, riff, vote, credit. Laugh → Credit → Repeat." />
+  <meta name="description" content="Funny is funny. Joke drops, mini standup, caption this, ask/answer." />
 
   <style>
     :root{
-      --bg:#0f0f10;
+      --bg:#0e0e10;
       --panel:#151517;
-      --panel2:#1c1c1f;
+      --panel2:#1c1c20;
+      --panel3:#222229;
       --text:#f4f4f5;
-      --muted:#b6b6bb;
-      --line:#2c2c30;
+      --muted:#b7b7c0;
+      --line:#2d2d34;
       --accent:#f5f5f5;
       --accentText:#111;
-      --danger:#ff5b5b;
-      --shadow: 0 10px 30px rgba(0,0,0,.35);
-      --r:12px;
+      --danger:#ff6666;
+      --gold:#d7b56d;
+      --green:#71d39a;
+      --blue:#8ab8ff;
+      --shadow:0 12px 32px rgba(0,0,0,.35);
+      --r:14px;
     }
 
-    * { box-sizing:border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      padding: 0;
-      line-height: 1.35;
+    * { box-sizing: border-box; }
+    html, body { margin:0; padding:0; }
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+      background: radial-gradient(circle at top, rgba(215,181,109,.08), transparent 28%), var(--bg);
+      color:var(--text);
+      line-height:1.35;
     }
 
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 20;
-      background: rgba(15,15,16,.85);
+    header{
+      position:sticky;
+      top:0;
+      z-index:20;
       backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--line);
+      background:rgba(14,14,16,.86);
+      border-bottom:1px solid var(--line);
     }
 
     .wrap{
-      max-width: 980px;
-      margin: 0 auto;
-      padding: 18px 16px;
+      max-width:1100px;
+      margin:0 auto;
+      padding:18px 16px;
     }
 
     .brandRow{
       display:flex;
-      gap: 12px;
+      gap:16px;
+      justify-content:space-between;
       align-items:flex-start;
-      justify-content: space-between;
-      flex-wrap: wrap;
+      flex-wrap:wrap;
     }
 
     h1{
-      margin: 0;
-      font-size: 1.6rem;
-      letter-spacing: .2px;
+      margin:0;
+      font-size:1.75rem;
+      letter-spacing:.2px;
     }
+
     .tagline{
-      margin: 6px 0 0;
-      color: var(--muted);
-      max-width: 60ch;
+      margin:6px 0 0;
+      color:var(--muted);
+      max-width:70ch;
+    }
+
+    .subline{
+      margin-top:10px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .tinyPill, .pill{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
+      border-radius:999px;
+    }
+
+    .tinyPill{
+      padding:5px 9px;
+      font-size:.78rem;
     }
 
     .pillRow{
       display:flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap:8px;
+      flex-wrap:wrap;
       align-items:center;
-      margin-top: 12px;
+      margin-top:10px;
     }
 
     .pill{
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.03);
-      color: var(--text);
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-size: .9rem;
+      padding:8px 11px;
+      font-size:.9rem;
       cursor:pointer;
       user-select:none;
     }
+
     .pill[aria-pressed="true"]{
-      background: var(--accent);
-      color: var(--accentText);
-      border-color: transparent;
+      background:var(--accent);
+      color:var(--accentText);
+      border-color:transparent;
     }
 
     main .wrap{
-      padding-top: 22px;
-      padding-bottom: 40px;
+      padding-top:22px;
+      padding-bottom:40px;
     }
 
-    .grid{
+    .layout{
       display:grid;
       grid-template-columns: 1fr;
-      gap: 18px;
+      gap:18px;
     }
 
-    @media(min-width: 900px){
-      .grid{
-        grid-template-columns: 360px 1fr;
-        align-items: start;
+    @media (min-width: 980px){
+      .layout{
+        grid-template-columns: 390px 1fr;
+        align-items:start;
       }
     }
 
     .card{
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: var(--r);
-      box-shadow: var(--shadow);
+      background:var(--panel);
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
       overflow:hidden;
     }
 
     .cardHd{
-      padding: 14px 14px 12px;
-      border-bottom: 1px solid var(--line);
+      padding:14px;
+      border-bottom:1px solid var(--line);
       display:flex;
       align-items:center;
-      justify-content: space-between;
-      gap: 12px;
+      justify-content:space-between;
+      gap:10px;
     }
 
-    .cardHd h2{
+    .cardHd h2, .cardHd h3{
       margin:0;
-      font-size: 1rem;
-      letter-spacing: .2px;
+      font-size:1rem;
+      letter-spacing:.2px;
     }
 
     .cardBd{
-      padding: 14px;
+      padding:14px;
     }
+
+    .stack{ display:flex; flex-direction:column; gap:12px; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .row > * { flex:1; min-width:140px; }
 
     label{
       display:block;
-      font-size: .9rem;
-      color: var(--muted);
-      margin: 0 0 6px;
+      margin:0 0 6px;
+      color:var(--muted);
+      font-size:.9rem;
     }
 
     input, textarea, select{
       width:100%;
-      border: 1px solid var(--line);
-      background: var(--panel2);
-      color: var(--text);
-      padding: 11px 12px;
-      border-radius: 10px;
+      border:1px solid var(--line);
+      background:var(--panel2);
+      color:var(--text);
+      border-radius:12px;
+      padding:11px 12px;
       outline:none;
     }
-    textarea{ min-height: 120px; resize: vertical; }
 
-    .row{
-      display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
+    textarea{
+      min-height:110px;
+      resize:vertical;
     }
-    .row > *{ flex: 1; min-width: 140px; }
 
     .btn{
-      border: 1px solid transparent;
-      background: var(--accent);
-      color: var(--accentText);
-      font-weight: 800;
-      padding: 10px 14px;
-      border-radius: 10px;
+      border:1px solid transparent;
+      background:var(--accent);
+      color:var(--accentText);
+      border-radius:12px;
+      padding:10px 14px;
+      font-weight:800;
       cursor:pointer;
-      user-select:none;
     }
+
     .btn.secondary{
-      background: rgba(255,255,255,.04);
-      color: var(--text);
-      border-color: var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      border-color:var(--line);
     }
+
     .btn.danger{
-      background: rgba(255,91,91,.12);
-      color: #ffd7d7;
-      border-color: rgba(255,91,91,.35);
-      font-weight: 700;
+      background:rgba(255,102,102,.12);
+      color:#ffd4d4;
+      border-color:rgba(255,102,102,.35);
     }
+
     .btn:disabled{
-      opacity: .5;
+      opacity:.5;
       cursor:not-allowed;
     }
 
-    .hint{
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: .9rem;
+    .small{ font-size:.9rem; color:var(--muted); }
+
+    .module{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.02);
+      border-radius:12px;
+      padding:12px;
+    }
+
+    .moduleTitle{
+      font-weight:800;
+      margin:0 0 8px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+    }
+
+    .promptBox{
+      background:var(--panel3);
+      border:1px dashed rgba(255,255,255,.14);
+      border-radius:12px;
+      padding:12px;
+      margin-top:8px;
+    }
+
+    .promptList{
+      margin:8px 0 0;
+      padding-left:18px;
+    }
+
+    .promptList li{
+      margin:4px 0;
     }
 
     .marketTools{
       display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
       align-items:center;
-      justify-content: space-between;
-      padding: 12px 14px;
-      border-bottom: 1px solid var(--line);
-      background: rgba(255,255,255,.02);
+      padding:12px 14px;
+      border-bottom:1px solid var(--line);
+      background:rgba(255,255,255,.02);
     }
+
     .marketTools .left, .marketTools .right{
-      display:flex; gap: 10px; flex-wrap: wrap; align-items:center;
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
     }
+
     .marketTools input{
-      width: 240px;
-      max-width: 80vw;
-      padding: 9px 10px;
-      border-radius: 999px;
+      width:240px;
+      max-width:80vw;
+      border-radius:999px;
+      padding:9px 10px;
+    }
+
+    .marketTools select{
+      width:170px;
+      border-radius:999px;
+      padding:9px 10px;
     }
 
     .feed{
-      padding: 14px;
+      padding:14px;
       display:flex;
-      flex-direction: column;
-      gap: 12px;
+      flex-direction:column;
+      gap:12px;
     }
 
-    .joke{
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(255,255,255,.02);
-      padding: 12px;
+    .post{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.02);
+      padding:12px;
     }
 
-    .jokeTop{
+    .postTop{
       display:flex;
-      gap: 10px;
-      justify-content: space-between;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
       align-items:flex-start;
-      flex-wrap: wrap;
     }
 
-    .jokeText{
-      margin: 0 0 10px;
-      white-space: pre-wrap;
-      font-size: 1rem;
+    .postText{
+      margin:0 0 10px;
+      white-space:pre-wrap;
+      font-size:1rem;
     }
 
     .meta{
       display:flex;
-      gap: 10px;
-      flex-wrap: wrap;
+      gap:8px;
+      flex-wrap:wrap;
       align-items:center;
-      color: var(--muted);
-      font-size: .85rem;
+      color:var(--muted);
+      font-size:.84rem;
     }
 
     .badge{
-      font-size: .78rem;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: rgba(255,255,255,.03);
-      color: var(--text);
+      font-size:.77rem;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--text);
     }
+
+    .badge.low{ border-color:rgba(255,255,255,.22); }
+    .badge.uni{ border-color:rgba(138,184,255,.35); }
+    .badge.high{ border-color:rgba(215,181,109,.4); }
+
+    .badge.type-joke{ border-color:rgba(255,255,255,.18); }
+    .badge.type-standup{ border-color:rgba(113,211,154,.35); }
+    .badge.type-caption{ border-color:rgba(138,184,255,.35); }
+    .badge.type-answer{ border-color:rgba(215,181,109,.35); }
 
     .actions{
       display:flex;
-      gap: 8px;
-      flex-wrap: wrap;
+      gap:8px;
+      flex-wrap:wrap;
       align-items:center;
-      margin-top: 10px;
+      margin-top:10px;
     }
+
     .actions .btn{
-      padding: 8px 10px;
-      border-radius: 999px;
-      font-weight: 800;
-      font-size: .9rem;
+      padding:8px 10px;
+      border-radius:999px;
+      font-size:.9rem;
     }
 
     details{
-      margin-top: 10px;
-      border-top: 1px dashed rgba(255,255,255,.12);
-      padding-top: 10px;
+      margin-top:10px;
+      border-top:1px dashed rgba(255,255,255,.12);
+      padding-top:10px;
     }
+
     summary{
       cursor:pointer;
-      color: var(--muted);
+      color:var(--muted);
       user-select:none;
     }
+
     .riffList{
-      margin-top: 10px;
+      margin-top:10px;
       display:flex;
-      flex-direction: column;
-      gap: 8px;
+      flex-direction:column;
+      gap:8px;
     }
+
     .riffItem{
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 8px 10px;
-      background: rgba(0,0,0,.18);
-      color: var(--text);
-      font-size: .95rem;
+      border:1px solid var(--line);
+      border-radius:10px;
+      background:rgba(0,0,0,.18);
+      padding:8px 10px;
+      font-size:.95rem;
     }
-    .riffItem em{ color: var(--muted); font-style: normal; font-weight: 700; }
+
+    .riffItem em{
+      color:var(--muted);
+      font-style:normal;
+      font-weight:700;
+    }
+
+    video{
+      width:100%;
+      border-radius:12px;
+      background:#000;
+      margin-top:10px;
+      max-height:420px;
+    }
+
+    .emptyState{
+      border:1px dashed rgba(255,255,255,.14);
+      border-radius:14px;
+      background:rgba(255,255,255,.02);
+      padding:18px;
+    }
 
     .toast{
-      position: fixed;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(20,20,22,.96);
-      border: 1px solid var(--line);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 999px;
-      box-shadow: var(--shadow);
-      opacity: 0;
+      position:fixed;
+      bottom:16px;
+      left:50%;
+      transform:translateX(-50%);
+      background:rgba(20,20,22,.96);
+      border:1px solid var(--line);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:999px;
+      box-shadow:var(--shadow);
+      opacity:0;
       pointer-events:none;
-      transition: opacity .18s ease;
-      max-width: 92vw;
-      z-index: 999;
+      transition:opacity .18s ease;
+      max-width:92vw;
+      z-index:999;
     }
-    .toast.show{ opacity: 1; }
+
+    .toast.show{ opacity:1; }
 
     footer{
-      border-top: 1px solid var(--line);
-      color: var(--muted);
+      border-top:1px solid var(--line);
+      color:var(--muted);
     }
+
     footer .wrap{
-      padding: 18px 16px;
       display:flex;
-      justify-content: space-between;
-      gap: 12px;
-      flex-wrap: wrap;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
       align-items:center;
+      padding:18px 16px;
     }
-    .small{ font-size: .9rem; color: var(--muted); }
   </style>
 </head>
-
 <body>
   <header>
     <div class="wrap">
       <div class="brandRow">
         <div>
-          <h1>Carlton’s Loadies — Joke Market</h1>
-          <p class="tagline">Stick to funny. We handle the splits. <span class="small">(Local-first v0: this browser stores the market.)</span></p>
+          <h1>Carlton’s Loadies</h1>
+          <p class="tagline">
+            Funny is funny. Drop a joke. Drop a bit. Caption the thing. Answer the dumb question.
+            <span class="small">Local-first for now. Juice-first immediately.</span>
+          </p>
+          <div class="subline">
+            <span class="tinyPill">JOKE MARKET</span>
+            <span class="tinyPill">MINI STANDUP</span>
+            <span class="tinyPill">CAPTION THIS</span>
+            <span class="tinyPill">ASK / ANSWER</span>
+          </div>
         </div>
 
         <div class="pillRow" aria-label="Mode">
-          <button class="pill" id="modeTop" aria-pressed="true" title="Sort by best score">Top</button>
-          <button class="pill" id="modeNew" aria-pressed="false" title="Sort by newest">Newest</button>
-          <button class="pill" id="modeMine" aria-pressed="false" title="Show only your posts">Mine</button>
+          <button class="pill" id="modeTop" aria-pressed="true">Top</button>
+          <button class="pill" id="modeNew" aria-pressed="false">Newest</button>
+          <button class="pill" id="modeMine" aria-pressed="false">Mine</button>
         </div>
       </div>
     </div>
@@ -352,74 +454,139 @@
 
   <main>
     <div class="wrap">
-      <div class="grid">
-        <!-- SUBMIT -->
-        <section class="card" aria-labelledby="submitTitle">
-          <div class="cardHd">
-            <h2 id="submitTitle">Drop a Joke</h2>
-            <button class="btn secondary" id="seedBtn" title="Add a few sample jokes (local only)">Seed</button>
-          </div>
+      <div class="layout">
+        <!-- LEFT COLUMN -->
+        <section class="stack">
+          <article class="card">
+            <div class="cardHd">
+              <h2>Drop Something Funny</h2>
+              <button class="btn secondary" id="seedBtn" title="Add local sample posts">Seed</button>
+            </div>
+            <div class="cardBd stack">
+              <div class="row">
+                <div>
+                  <label for="author">Name / Alias</label>
+                  <input id="author" placeholder="e.g. BmaC" autocomplete="nickname" />
+                </div>
+                <div>
+                  <label for="brow">BROW</label>
+                  <select id="brow">
+                    <option value="low">LOW BROW</option>
+                    <option value="uni" selected>UNI BROW</option>
+                    <option value="high">HIGH BROW</option>
+                  </select>
+                </div>
+              </div>
 
-          <div class="cardBd">
-            <label for="author">Name / Alias</label>
-            <input id="author" placeholder="e.g., BmaC" autocomplete="nickname" />
-
-            <div style="height:10px"></div>
-
-            <label for="jokeText">Joke</label>
-            <textarea id="jokeText" placeholder="One-liner, premise, roast, tag…"></textarea>
-
-            <div style="height:10px"></div>
-
-            <div class="row">
-              <div>
-                <label for="tag">Format</label>
-                <select id="tag">
-                  <option value="one-liner">One-liner</option>
-                  <option value="premise">Premise</option>
-                  <option value="story">Story</option>
-                  <option value="roast">Roast</option>
-                  <option value="tag">Tag</option>
-                  <option value="skit">Skit</option>
-                  <option value="other">Other</option>
-                </select>
+              <div class="row">
+                <div>
+                  <label for="postType">Post Type</label>
+                  <select id="postType">
+                    <option value="joke">Joke</option>
+                    <option value="standup">Mini Standup</option>
+                    <option value="caption">Caption This</option>
+                    <option value="answer">Ask / Answer</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="tag">Format</label>
+                  <select id="tag">
+                    <option value="one-liner">One-liner</option>
+                    <option value="premise">Premise</option>
+                    <option value="story">Story</option>
+                    <option value="roast">Roast</option>
+                    <option value="tag">Tag</option>
+                    <option value="skit">Skit</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
               </div>
 
               <div>
                 <label for="credit">Credit line</label>
-                <input id="credit" placeholder="Optional (e.g., ‘— written by …’)"/>
+                <input id="credit" placeholder="Optional (e.g. — written by …)" />
+              </div>
+
+              <div>
+                <label for="jokeText">Text / Setup / Caption / Answer</label>
+                <textarea id="jokeText" placeholder="Drop a joke. Or don’t. Make it funny."></textarea>
+              </div>
+
+              <div id="videoModule" class="module">
+                <div class="moduleTitle">
+                  <span>MINI STANDUP</span>
+                  <span class="small">Upload up to :30</span>
+                </div>
+                <input id="videoUpload" type="file" accept="video/mp4,video/webm,video/quicktime" />
+                <div class="small" id="videoStatus" style="margin-top:8px;">No clip loaded.</div>
+                <video id="videoPreview" controls style="display:none;"></video>
+              </div>
+
+              <button class="btn" id="postBtn">Post It</button>
+
+              <div class="small">
+                Rules: no hate garbage, no plagiarism, credit humans, keep it constructive.
+              </div>
+
+              <div class="row">
+                <button class="btn secondary" id="exportBtn">Export JSON</button>
+                <button class="btn secondary" id="importBtn">Import JSON</button>
+                <button class="btn danger" id="wipeBtn">Wipe Local Market</button>
+                <input id="importFile" type="file" accept="application/json" style="display:none;" />
               </div>
             </div>
+          </article>
 
-            <div style="height:12px"></div>
-
-            <button class="btn" id="postBtn">Post Joke</button>
-
-            <p class="hint">
-              Rules: No hate garbage. No plagiarism. Credit humans. Keep it constructive.
-              <br/>Tip button is a placeholder (no payments in v0).
-            </p>
-
-            <div class="row" style="margin-top:12px;">
-              <button class="btn secondary" id="exportBtn">Export JSON</button>
-              <button class="btn secondary" id="importBtn">Import JSON</button>
-              <button class="btn danger" id="wipeBtn" title="Deletes local market from this browser">Wipe Local Market</button>
-              <input id="importFile" type="file" accept="application/json" style="display:none;" />
+          <article class="card">
+            <div class="cardHd">
+              <h3>Test Your Chops</h3>
+              <button class="btn secondary" id="newChopsBtn">New Cues</button>
             </div>
-          </div>
+            <div class="cardBd">
+              <div class="promptBox">
+                <div class="small">Take these 3–4 cues. Give us :30. Or don’t. Drop a joke based on them.</div>
+                <ul class="promptList" id="chopsList"></ul>
+              </div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="cardHd">
+              <h3>Caption This</h3>
+              <button class="btn secondary" id="newCaptionBtn">New Prompt</button>
+            </div>
+            <div class="cardBd">
+              <div class="promptBox">
+                <div id="captionPromptText" class="postText" style="margin:0;"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="cardHd">
+              <h3>Ask / Answer</h3>
+              <button class="btn secondary" id="newQuestionBtn">New Question</button>
+            </div>
+            <div class="cardBd">
+              <div class="promptBox">
+                <div class="small">Ask a question. Get an answer.</div>
+                <div id="questionPromptText" class="postText" style="margin-top:8px; margin-bottom:0;"></div>
+              </div>
+            </div>
+          </article>
         </section>
 
-        <!-- MARKET -->
-        <section class="card" aria-labelledby="marketTitle">
+        <!-- RIGHT COLUMN -->
+        <section class="card">
           <div class="cardHd">
-            <h2 id="marketTitle">The Market</h2>
-            <button class="btn secondary" id="shareAllBtn" title="Generate a share link for your current market snapshot">Share Snapshot</button>
+            <h2>The Market</h2>
+            <button class="btn secondary" id="shareAllBtn">Share Snapshot</button>
           </div>
 
           <div class="marketTools">
             <div class="left">
-              <input id="search" placeholder="Search jokes, authors, riffs…" />
-              <select id="filterTag" style="width: 160px; border-radius: 999px; padding: 9px 10px;">
+              <input id="search" placeholder="Search jokes, captions, answers, riffs…" />
+              <select id="filterTag">
                 <option value="all">All formats</option>
                 <option value="one-liner">One-liner</option>
                 <option value="premise">Premise</option>
@@ -429,10 +596,16 @@
                 <option value="skit">Skit</option>
                 <option value="other">Other</option>
               </select>
+              <select id="filterType">
+                <option value="all">All post types</option>
+                <option value="joke">Joke</option>
+                <option value="standup">Mini Standup</option>
+                <option value="caption">Caption This</option>
+                <option value="answer">Ask / Answer</option>
+              </select>
             </div>
-
             <div class="right">
-              <span class="small" id="countLabel">0 jokes</span>
+              <span class="small" id="countLabel">0 posts</span>
             </div>
           </div>
 
@@ -445,27 +618,27 @@
   <footer>
     <div class="wrap">
       <div>Laugh → Credit → Repeat</div>
-      <div class="small">Local-first v0. Later: real accounts, real credits, real splits.</div>
+      <div class="small">Still local-first. Much less sterile.</div>
     </div>
   </footer>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
-    // ---------- Utilities ----------
     const $ = (sel) => document.querySelector(sel);
+
     const escapeHTML = (str) =>
       String(str).replace(/[&<>"']/g, (m) => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;"
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
       }[m]));
 
     const toastEl = $("#toast");
     let toastTimer = null;
-    function toast(msg) {
+    function toast(msg){
       toastEl.textContent = msg;
       toastEl.classList.add("show");
       clearTimeout(toastTimer);
@@ -473,7 +646,7 @@
     }
 
     function uid() {
-      const k = "jm_user_id_v1";
+      const k = "cl_user_id_v2";
       let id = localStorage.getItem(k);
       if (!id) {
         id = "u_" + Math.random().toString(36).slice(2) + "_" + Date.now();
@@ -482,36 +655,9 @@
       return id;
     }
 
-    // ---------- Storage ----------
-    const STORE_KEY = "jokeMarket_v2";
+    const STORE_KEY = "carltons_loadies_v3";
 
-    function loadMarket() {
-      // migrate old key if present
-      const old = localStorage.getItem("jokeMarket");
-      if (old && !localStorage.getItem(STORE_KEY)) {
-        try {
-          const parsed = JSON.parse(old);
-          const migrated = (Array.isArray(parsed) ? parsed : []).map(j => ({
-            id: j.id ?? Date.now(),
-            text: String(j.text ?? ""),
-            author: String(j.author ?? "Anonymous"),
-            laughs: Number(j.laughs ?? 0),
-            mehs: Number(j.mehs ?? 0),
-            tips: Number(j.tips ?? 0),
-            riffs: Array.isArray(j.riffs) ? j.riffs.map(r => ({
-              author: String(r.author ?? "Anonymous"),
-              text: String(r.text ?? "")
-            })) : [],
-            tag: "other",
-            credit: "",
-            createdAt: j.id ?? Date.now(),
-            ownerId: ""
-          }));
-          localStorage.setItem(STORE_KEY, JSON.stringify(migrated));
-          localStorage.removeItem("jokeMarket");
-        } catch {}
-      }
-
+    function loadPosts(){
       const raw = localStorage.getItem(STORE_KEY);
       if (!raw) return [];
       try {
@@ -522,123 +668,210 @@
       }
     }
 
-    function saveMarket(list) {
+    function savePosts(list){
       localStorage.setItem(STORE_KEY, JSON.stringify(list));
     }
 
-    // ---------- App State ----------
     const state = {
       userId: uid(),
-      jokes: loadMarket(),
-      sortMode: "top",   // top | new | mine
+      posts: loadPosts(),
+      sortMode: "top",
       search: "",
-      filterTag: "all"
+      filterTag: "all",
+      filterType: "all",
+      stagedVideoDataUrl: "",
+      stagedVideoDuration: 0
     };
 
-    // ---------- Scoring / Sorting ----------
-    const score = (j) => (j.laughs || 0) - (j.mehs || 0);
+    const score = (p) => (p.laughs || 0) - (p.mehs || 0);
 
-    function getVisibleJokes() {
-      let list = [...state.jokes];
+    const chopsBank = [
+      ["dentist", "airplane food", "crypto", "mother-in-law"],
+      ["parking lot", "energy drink", "wedding DJ", "fake confidence"],
+      ["raccoon", "Uber driver", "church shoes", "podcast"],
+      ["pickleball", "midlife crisis", "protein powder", "group chat"],
+      ["cowboy hat", "Tesla", "yard sale", "manifesting"],
+      ["insurance call", "gas station burrito", "LinkedIn", "apology text"]
+    ];
 
-      if (state.sortMode === "mine") {
-        list = list.filter(j => j.ownerId === state.userId);
+    const captionBank = [
+      "Two guys in lawn chairs watching a neighbor confidently do something incredibly wrong.",
+      "A dog with human-level disappointment watching its owner explain something unnecessary.",
+      "A family photo where one person clearly just heard the weirdest thing ever said.",
+      "A guy at a barbecue pretending he knows how to smoke meat.",
+      "Someone absolutely certain this was a good idea five minutes ago."
+    ];
+
+    const questionBank = [
+      "Why do dogs lose their minds when you pick up keys?",
+      "What’s the most suspiciously confident food?",
+      "What’s the least trustworthy sentence a stranger can say at a gas station?",
+      "What object has the strongest divorced-dad energy?",
+      "Why does every group text eventually become unusable?"
+    ];
+
+    function pickRandom(arr){
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function refreshPrompts(){
+      const chops = pickRandom(chopsBank);
+      $("#chopsList").innerHTML = chops.map(c => `<li>${escapeHTML(c)}</li>`).join("");
+      $("#captionPromptText").textContent = pickRandom(captionBank);
+      $("#questionPromptText").textContent = pickRandom(questionBank);
+    }
+
+    function fileToDataUrl(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function getVideoDuration(file){
+      return new Promise((resolve, reject) => {
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.onloadedmetadata = () => {
+          URL.revokeObjectURL(video.src);
+          resolve(video.duration || 0);
+        };
+        video.onerror = reject;
+        video.src = URL.createObjectURL(file);
+      });
+    }
+
+    function typeLabel(type){
+      if (type === "standup") return "MINI STANDUP";
+      if (type === "caption") return "CAPTION THIS";
+      if (type === "answer") return "ASK / ANSWER";
+      return "JOKE";
+    }
+
+    function typeClass(type){
+      if (type === "standup") return "type-standup";
+      if (type === "caption") return "type-caption";
+      if (type === "answer") return "type-answer";
+      return "type-joke";
+    }
+
+    function browLabel(brow){
+      if (brow === "low") return "LOW BROW";
+      if (brow === "high") return "HIGH BROW";
+      return "UNI BROW";
+    }
+
+    function getVisiblePosts(){
+      let list = [...state.posts];
+
+      if (state.sortMode === "mine"){
+        list = list.filter(p => p.ownerId === state.userId);
       }
 
-      if (state.filterTag !== "all") {
-        list = list.filter(j => j.tag === state.filterTag);
+      if (state.filterTag !== "all"){
+        list = list.filter(p => p.tag === state.filterTag);
+      }
+
+      if (state.filterType !== "all"){
+        list = list.filter(p => p.type === state.filterType);
       }
 
       const q = state.search.trim().toLowerCase();
-      if (q) {
-        list = list.filter(j => {
-          const inJoke = (j.text || "").toLowerCase().includes(q);
-          const inAuthor = (j.author || "").toLowerCase().includes(q);
-          const inCredit = (j.credit || "").toLowerCase().includes(q);
-          const inRiffs = (j.riffs || []).some(r =>
+      if (q){
+        list = list.filter(p => {
+          const inText = (p.text || "").toLowerCase().includes(q);
+          const inAuthor = (p.author || "").toLowerCase().includes(q);
+          const inCredit = (p.credit || "").toLowerCase().includes(q);
+          const inRiffs = (p.riffs || []).some(r =>
             (r.text || "").toLowerCase().includes(q) ||
             (r.author || "").toLowerCase().includes(q)
           );
-          return inJoke || inAuthor || inCredit || inRiffs;
+          return inText || inAuthor || inCredit || inRiffs;
         });
       }
 
-      if (state.sortMode === "top") {
-        list.sort((a, b) => score(b) - score(a) || (b.createdAt || 0) - (a.createdAt || 0));
+      if (state.sortMode === "top"){
+        list.sort((a,b) => score(b) - score(a) || (b.createdAt || 0) - (a.createdAt || 0));
       } else {
-        list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        list.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
       }
 
       return list;
     }
 
-    // ---------- Render ----------
     const jokeFeed = $("#jokeFeed");
     const countLabel = $("#countLabel");
 
-    function render() {
-      const list = getVisibleJokes();
-      countLabel.textContent = `${list.length} joke${list.length === 1 ? "" : "s"}`;
+    function render(){
+      const list = getVisiblePosts();
+      countLabel.textContent = `${list.length} post${list.length === 1 ? "" : "s"}`;
 
-      if (!list.length) {
+      if (!list.length){
         jokeFeed.innerHTML = `
-          <div class="joke">
-            <p class="jokeText">No jokes yet. Drop one on the left.</p>
+          <div class="emptyState">
+            <div class="postText">No posts yet.</div>
             <div class="meta">
-              <span class="badge">Tip: hit “Seed” for samples</span>
-              <span class="badge">Or paste your own</span>
+              <span class="badge type-joke">Drop a joke</span>
+              <span class="badge type-standup">Upload a :30 bit</span>
+              <span class="badge type-caption">Caption something dumb</span>
+              <span class="badge type-answer">Answer a weird question</span>
             </div>
           </div>
         `;
         return;
       }
 
-      jokeFeed.innerHTML = list.map(j => {
-        const safeText = escapeHTML(j.text || "");
-        const safeAuthor = escapeHTML(j.author || "Anonymous");
-        const safeCredit = escapeHTML(j.credit || "");
-        const safeTag = escapeHTML(j.tag || "other");
-        const created = new Date(j.createdAt || Date.now()).toLocaleString();
-        const riffs = (j.riffs || []).map(r =>
+      jokeFeed.innerHTML = list.map(p => {
+        const safeText = escapeHTML(p.text || "");
+        const safeAuthor = escapeHTML(p.author || "Anonymous");
+        const safeCredit = escapeHTML(p.credit || "");
+        const safeTag = escapeHTML(p.tag || "other");
+        const created = new Date(p.createdAt || Date.now()).toLocaleString();
+        const isMine = p.ownerId === state.userId;
+
+        const riffs = (p.riffs || []).map(r =>
           `<div class="riffItem"><em>${escapeHTML(r.author || "Anonymous")}:</em> ${escapeHTML(r.text || "")}</div>`
         ).join("");
-        const isMine = j.ownerId === state.userId;
 
         return `
-          <article class="joke" data-joke="${j.id}">
-            <div class="jokeTop">
-              <div style="flex:1; min-width: 220px;">
-                <p class="jokeText">${safeText}</p>
+          <article class="post" data-post="${p.id}">
+            <div class="postTop">
+              <div style="flex:1; min-width:240px;">
+                ${p.text ? `<p class="postText">${safeText}</p>` : ""}
+                ${p.videoDataUrl ? `<video controls src="${p.videoDataUrl}"></video>` : ""}
                 <div class="meta">
                   <span>— ${safeAuthor}</span>
-                  ${safeCredit ? `<span class="badge">${safeCredit}</span>` : ""}
+                  <span class="badge ${typeClass(p.type)}">${typeLabel(p.type)}</span>
+                  <span class="badge ${p.brow}">${browLabel(p.brow)}</span>
                   <span class="badge">${safeTag}</span>
-                  <span class="badge">Score: ${score(j)}</span>
+                  ${safeCredit ? `<span class="badge">${safeCredit}</span>` : ""}
+                  <span class="badge">Score: ${score(p)}</span>
                   <span class="badge">${created}</span>
-                  ${isMine ? `<span class="badge" title="This was posted from this browser">Mine</span>` : ""}
+                  ${isMine ? `<span class="badge">Mine</span>` : ""}
                 </div>
               </div>
 
               <div class="actions">
-                <button class="btn secondary" data-act="copy" data-id="${j.id}">Copy</button>
-                <button class="btn secondary" data-act="share" data-id="${j.id}">Share</button>
-                <button class="btn" data-act="laugh" data-id="${j.id}">😂 ${j.laughs || 0}</button>
-                <button class="btn secondary" data-act="meh" data-id="${j.id}">😐 ${j.mehs || 0}</button>
-                <button class="btn secondary" data-act="tip" data-id="${j.id}">💸 ${j.tips || 0}</button>
-                ${isMine ? `<button class="btn danger" data-act="del" data-id="${j.id}">Delete</button>` : ""}
+                <button class="btn secondary" data-act="copy" data-id="${p.id}">Copy</button>
+                <button class="btn secondary" data-act="share" data-id="${p.id}">Share</button>
+                <button class="btn" data-act="laugh" data-id="${p.id}">😂 ${p.laughs || 0}</button>
+                <button class="btn secondary" data-act="meh" data-id="${p.id}">😐 ${p.mehs || 0}</button>
+                <button class="btn secondary" data-act="tip" data-id="${p.id}">💸 ${p.tips || 0}</button>
+                ${isMine ? `<button class="btn danger" data-act="del" data-id="${p.id}">Delete</button>` : ""}
               </div>
             </div>
 
             <details>
-              <summary>Riffs (${(j.riffs || []).length})</summary>
+              <summary>Riffs (${(p.riffs || []).length})</summary>
               <div class="riffList">${riffs || `<div class="small">No riffs yet. Add one.</div>`}</div>
-
               <div class="row" style="margin-top:10px;">
-                <input placeholder="Your name" data-riff-author="${j.id}" />
-                <input placeholder="Add a riff…" data-riff-text="${j.id}" />
+                <input placeholder="Your name" data-riff-author="${p.id}" />
+                <input placeholder="Add a riff…" data-riff-text="${p.id}" />
               </div>
               <div style="margin-top:10px;">
-                <button class="btn secondary" data-act="addriff" data-id="${j.id}">Add Riff</button>
+                <button class="btn secondary" data-act="addriff" data-id="${p.id}">Add Riff</button>
               </div>
             </details>
           </article>
@@ -646,28 +879,23 @@
       }).join("");
     }
 
-    function persistAndRender(msg) {
-      saveMarket(state.jokes);
+    function persistAndRender(msg){
+      savePosts(state.posts);
       render();
       if (msg) toast(msg);
     }
 
-    // ---------- Mode Controls ----------
-    const modeTop = $("#modeTop");
-    const modeNew = $("#modeNew");
-    const modeMine = $("#modeMine");
-
-    function setMode(mode) {
+    function setMode(mode){
       state.sortMode = mode;
-      modeTop.setAttribute("aria-pressed", mode === "top");
-      modeNew.setAttribute("aria-pressed", mode === "new");
-      modeMine.setAttribute("aria-pressed", mode === "mine");
+      $("#modeTop").setAttribute("aria-pressed", mode === "top");
+      $("#modeNew").setAttribute("aria-pressed", mode === "new");
+      $("#modeMine").setAttribute("aria-pressed", mode === "mine");
       render();
     }
 
-    modeTop.addEventListener("click", () => setMode("top"));
-    modeNew.addEventListener("click", () => setMode("new"));
-    modeMine.addEventListener("click", () => setMode("mine"));
+    $("#modeTop").addEventListener("click", () => setMode("top"));
+    $("#modeNew").addEventListener("click", () => setMode("new"));
+    $("#modeMine").addEventListener("click", () => setMode("mine"));
 
     $("#search").addEventListener("input", (e) => {
       state.search = e.target.value;
@@ -679,22 +907,83 @@
       render();
     });
 
-    // ---------- Posting ----------
+    $("#filterType").addEventListener("change", (e) => {
+      state.filterType = e.target.value;
+      render();
+    });
+
+    $("#newChopsBtn").addEventListener("click", refreshPrompts);
+    $("#newCaptionBtn").addEventListener("click", () => {
+      $("#captionPromptText").textContent = pickRandom(captionBank);
+    });
+    $("#newQuestionBtn").addEventListener("click", () => {
+      $("#questionPromptText").textContent = pickRandom(questionBank);
+    });
+
+    $("#videoUpload").addEventListener("change", async (e) => {
+      const file = e.target.files?.[0];
+      const status = $("#videoStatus");
+      const preview = $("#videoPreview");
+
+      state.stagedVideoDataUrl = "";
+      state.stagedVideoDuration = 0;
+      preview.style.display = "none";
+      preview.removeAttribute("src");
+
+      if (!file){
+        status.textContent = "No clip loaded.";
+        return;
+      }
+
+      try {
+        const duration = await getVideoDuration(file);
+        if (duration > 30.5){
+          status.textContent = `Too long: ${duration.toFixed(1)}s. Keep it to :30.`;
+          toast("Video is too long.");
+          e.target.value = "";
+          return;
+        }
+
+        const dataUrl = await fileToDataUrl(file);
+        state.stagedVideoDataUrl = dataUrl;
+        state.stagedVideoDuration = duration;
+
+        preview.src = dataUrl;
+        preview.style.display = "block";
+        status.textContent = `Loaded: ${duration.toFixed(1)}s. Ready to post.`;
+      } catch {
+        status.textContent = "Could not load that clip.";
+        toast("Video load failed.");
+      }
+    });
+
     $("#postBtn").addEventListener("click", () => {
       const author = ($("#author").value || "").trim() || "Anonymous";
       const text = ($("#jokeText").value || "").trim();
       const tag = $("#tag").value;
       const credit = ($("#credit").value || "").trim();
+      const brow = $("#brow").value;
+      const type = $("#postType").value;
 
-      if (!text) return toast("Drop a joke first.");
+      if (type === "standup" && !state.stagedVideoDataUrl){
+        return toast("Upload a mini standup clip first.");
+      }
+
+      if (type !== "standup" && !text){
+        return toast("Drop something first.");
+      }
 
       const now = Date.now();
-      const joke = {
+      const post = {
         id: now + Math.floor(Math.random() * 1000),
+        type,
         text,
         author,
         tag,
         credit,
+        brow,
+        videoDataUrl: type === "standup" ? state.stagedVideoDataUrl : "",
+        videoDuration: type === "standup" ? state.stagedVideoDuration : 0,
         laughs: 0,
         mehs: 0,
         tips: 0,
@@ -703,59 +992,108 @@
         ownerId: state.userId
       };
 
-      state.jokes.unshift(joke);
+      state.posts.unshift(post);
+
       $("#jokeText").value = "";
+      $("#videoUpload").value = "";
+      $("#videoPreview").style.display = "none";
+      $("#videoPreview").removeAttribute("src");
+      $("#videoStatus").textContent = "No clip loaded.";
+      state.stagedVideoDataUrl = "";
+      state.stagedVideoDuration = 0;
+
       persistAndRender("Posted.");
     });
 
-    // Seed local samples
     $("#seedBtn").addEventListener("click", () => {
       const now = Date.now();
       const samples = [
-        { text: "I’m not saying I’m bad at directions… but my GPS once asked *me* for an estimate.", author: "Sample", tag: "one-liner" },
-        { text: "Premise: adulthood is just paying money to feel the same amount of tired in different rooms.", author: "Sample", tag: "premise" },
-        { text: "Roast: You have the confidence of a man who has never once opened his own email attachment.", author: "Sample", tag: "roast" }
-      ].map((s, i) => ({
-        id: now + i,
-        text: s.text,
-        author: s.author,
-        tag: s.tag,
-        credit: "",
-        laughs: 0,
-        mehs: 0,
-        tips: 0,
-        riffs: [],
-        createdAt: now + i,
-        ownerId: ""
-      }));
+        {
+          id: now + 1,
+          type: "joke",
+          text: "I’m not saying I’m bad at directions, but my GPS once asked me for an estimate.",
+          author: "Sample",
+          tag: "one-liner",
+          credit: "",
+          brow: "uni",
+          videoDataUrl: "",
+          videoDuration: 0,
+          laughs: 3,
+          mehs: 0,
+          tips: 0,
+          riffs: [],
+          createdAt: now + 1,
+          ownerId: ""
+        },
+        {
+          id: now + 2,
+          type: "caption",
+          text: "When the family group text suddenly gets way too honest.",
+          author: "Sample",
+          tag: "other",
+          credit: "",
+          brow: "high",
+          videoDataUrl: "",
+          videoDuration: 0,
+          laughs: 2,
+          mehs: 0,
+          tips: 0,
+          riffs: [],
+          createdAt: now + 2,
+          ownerId: ""
+        },
+        {
+          id: now + 3,
+          type: "answer",
+          text: "Dogs freak out over keys because they know we only do two things: leave, or lie about leaving.",
+          author: "Sample",
+          tag: "premise",
+          credit: "",
+          brow: "low",
+          videoDataUrl: "",
+          videoDuration: 0,
+          laughs: 4,
+          mehs: 1,
+          tips: 0,
+          riffs: [],
+          createdAt: now + 3,
+          ownerId: ""
+        }
+      ];
 
-      state.jokes = [...samples, ...state.jokes];
-      persistAndRender("Seeded (local).");
+      state.posts = [...samples, ...state.posts];
+      persistAndRender("Seeded.");
     });
 
-    // ---------- Feed actions ----------
     jokeFeed.addEventListener("click", async (e) => {
       const btn = e.target.closest("button");
       if (!btn) return;
+
       const act = btn.dataset.act;
       const id = Number(btn.dataset.id);
       if (!act || !id) return;
 
-      const j = state.jokes.find(x => x.id === id);
-      if (!j) return;
+      const p = state.posts.find(x => x.id === id);
+      if (!p) return;
 
-      if (act === "laugh") { j.laughs = (j.laughs || 0) + 1; return persistAndRender(); }
-      if (act === "meh") { j.mehs = (j.mehs || 0) + 1; return persistAndRender(); }
+      if (act === "laugh") {
+        p.laughs = (p.laughs || 0) + 1;
+        return persistAndRender();
+      }
+
+      if (act === "meh") {
+        p.mehs = (p.mehs || 0) + 1;
+        return persistAndRender();
+      }
 
       if (act === "tip") {
-        j.tips = (j.tips || 0) + 1;
-        persistAndRender("Tip registered (payments later).");
-        return;
+        p.tips = (p.tips || 0) + 1;
+        return persistAndRender("Tip registered. Payments later.");
       }
 
       if (act === "del") {
-        if (j.ownerId !== state.userId) return toast("Only the original poster can delete (this browser).");
-        state.jokes = state.jokes.filter(x => x.id !== id);
+        if (p.ownerId !== state.userId) return toast("Only your own posts can be deleted here.");
+        state.posts = state.posts.filter(x => x.id !== id);
         return persistAndRender("Deleted.");
       }
 
@@ -765,16 +1103,15 @@
         const author = (a?.value || "").trim() || "Anonymous";
         const text = (t?.value || "").trim();
         if (!text) return toast("Add a riff first.");
-        j.riffs = j.riffs || [];
-        j.riffs.push({ author, text, at: Date.now() });
-        if (t) t.value = "";
+        p.riffs.push({ author, text, at: Date.now() });
+        t.value = "";
         return persistAndRender("Riff added.");
       }
 
       if (act === "copy") {
         const payload =
-          `${j.text}\n— ${j.author}` +
-          (j.credit ? `\n${j.credit}` : "");
+          `${p.text || "[mini standup clip]"}\n— ${p.author}` +
+          (p.credit ? `\n${p.credit}` : "");
         try {
           await navigator.clipboard.writeText(payload);
           toast("Copied.");
@@ -786,7 +1123,14 @@
 
       if (act === "share") {
         const pack = btoa(unescape(encodeURIComponent(JSON.stringify({
-          one: { text: j.text, author: j.author, tag: j.tag, credit: j.credit }
+          one: {
+            type: p.type,
+            text: p.text,
+            author: p.author,
+            tag: p.tag,
+            credit: p.credit,
+            brow: p.brow
+          }
         }))));
         const url = `${location.origin}${location.pathname}#one=${pack}`;
         try {
@@ -795,16 +1139,14 @@
         } catch {
           prompt("Copy this link:", url);
         }
-        return;
       }
     });
 
-    // ---------- Export / Import ----------
     $("#exportBtn").addEventListener("click", () => {
-      const blob = new Blob([JSON.stringify(state.jokes, null, 2)], { type: "application/json" });
+      const blob = new Blob([JSON.stringify(state.posts, null, 2)], { type: "application/json" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
-      a.download = "joke-market-export.json";
+      a.download = "carltons-loadies-export.json";
       a.click();
       URL.revokeObjectURL(a.href);
       toast("Exported.");
@@ -819,7 +1161,7 @@
         const text = await file.text();
         const parsed = JSON.parse(text);
         if (!Array.isArray(parsed)) return toast("Invalid JSON format.");
-        state.jokes = parsed;
+        state.posts = parsed;
         persistAndRender("Imported.");
       } catch {
         toast("Import failed.");
@@ -831,15 +1173,14 @@
     $("#wipeBtn").addEventListener("click", () => {
       const ok = confirm("This deletes the local market from THIS browser only. Continue?");
       if (!ok) return;
-      state.jokes = [];
-      saveMarket([]);
+      state.posts = [];
+      savePosts([]);
       toast("Wiped local market.");
       render();
     });
 
-    // Snapshot share (can get large)
     $("#shareAllBtn").addEventListener("click", async () => {
-      const pack = btoa(unescape(encodeURIComponent(JSON.stringify({ all: state.jokes }))));
+      const pack = btoa(unescape(encodeURIComponent(JSON.stringify({ all: state.posts }))));
       const url = `${location.origin}${location.pathname}#all=${pack}`;
       try {
         await navigator.clipboard.writeText(url);
@@ -849,40 +1190,49 @@
       }
     });
 
-    // ---------- Import from URL hash ----------
-    function tryImportFromHash() {
+    function tryImportFromHash(){
       const h = location.hash || "";
       const m = h.match(/#(one|all)=([^&]+)/);
       if (!m) return;
+
       const kind = m[1];
       const payload = m[2];
+
       try {
         const decoded = JSON.parse(decodeURIComponent(escape(atob(payload))));
-        if (kind === "one" && decoded?.one?.text) {
+        if (kind === "one" && decoded?.one){
           const now = Date.now();
-          const j = decoded.one;
-          state.jokes.unshift({
+          const p = decoded.one;
+          state.posts.unshift({
             id: now + Math.floor(Math.random() * 1000),
-            text: String(j.text),
-            author: String(j.author || "Anonymous"),
-            tag: String(j.tag || "other"),
-            credit: String(j.credit || ""),
-            laughs: 0, mehs: 0, tips: 0,
+            type: p.type || "joke",
+            text: String(p.text || ""),
+            author: String(p.author || "Anonymous"),
+            tag: String(p.tag || "other"),
+            credit: String(p.credit || ""),
+            brow: String(p.brow || "uni"),
+            videoDataUrl: "",
+            videoDuration: 0,
+            laughs: 0,
+            mehs: 0,
+            tips: 0,
             riffs: [],
             createdAt: now,
             ownerId: ""
           });
-          persistAndRender("Imported 1 joke from link.");
+          persistAndRender("Imported 1 post from link.");
         }
-        if (kind === "all" && Array.isArray(decoded?.all)) {
-          state.jokes = decoded.all;
-          persistAndRender("Imported snapshot from link.");
+
+        if (kind === "all" && Array.isArray(decoded?.all)){
+          state.posts = decoded.all;
+          persistAndRender("Imported snapshot.");
         }
+
         history.replaceState(null, "", location.pathname + location.search);
       } catch {}
     }
 
-    // ---------- Init ----------
+    refreshPrompts();
     tryImportFromHash();
     render();
   </script>
