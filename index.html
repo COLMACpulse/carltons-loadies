@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Carlton’s Loadies — Joke Market</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Funny is funny. Joke drops, mini standup, caption this, ask/answer." />
+  <meta name="description" content="Funny is funny. Build clips into jokes, jokes into bits, bits into acts, acts into sets." />
 
   <style>
     :root{
@@ -21,6 +21,7 @@
       --gold:#d7b56d;
       --green:#71d39a;
       --blue:#8ab8ff;
+      --purple:#b497ff;
       --shadow:0 12px 32px rgba(0,0,0,.35);
       --r:14px;
     }
@@ -29,7 +30,10 @@
     html, body { margin:0; padding:0; }
     body{
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
-      background: radial-gradient(circle at top, rgba(215,181,109,.08), transparent 28%), var(--bg);
+      background:
+        radial-gradient(circle at top, rgba(215,181,109,.08), transparent 28%),
+        radial-gradient(circle at top right, rgba(180,151,255,.08), transparent 20%),
+        var(--bg);
       color:var(--text);
       line-height:1.35;
     }
@@ -44,7 +48,7 @@
     }
 
     .wrap{
-      max-width:1100px;
+      max-width:1160px;
       margin:0 auto;
       padding:18px 16px;
     }
@@ -59,14 +63,14 @@
 
     h1{
       margin:0;
-      font-size:1.75rem;
+      font-size:1.85rem;
       letter-spacing:.2px;
     }
 
     .tagline{
       margin:6px 0 0;
       color:var(--muted);
-      max-width:70ch;
+      max-width:78ch;
     }
 
     .subline{
@@ -109,8 +113,71 @@
       border-color:transparent;
     }
 
+    .hero{
+      padding-top:18px;
+    }
+
+    .heroCard{
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border:1px solid var(--line);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:18px;
+    }
+
+    .heroGrid{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:16px;
+    }
+
+    @media (max-width: 900px){
+      .heroGrid{ grid-template-columns:1fr; }
+    }
+
+    .heroTitle{
+      margin:0 0 10px;
+      font-size:clamp(1.5rem, 3.2vw, 2.4rem);
+      line-height:1.04;
+    }
+
+    .heroText{
+      margin:0;
+      color:var(--muted);
+      max-width:68ch;
+    }
+
+    .ladder{
+      display:grid;
+      grid-template-columns:repeat(5,1fr);
+      gap:8px;
+    }
+
+    @media (max-width: 760px){
+      .ladder{ grid-template-columns:repeat(2,1fr); }
+    }
+
+    .step{
+      border:1px solid var(--line);
+      background:var(--panel2);
+      border-radius:12px;
+      padding:10px;
+      min-height:84px;
+    }
+
+    .step strong{
+      display:block;
+      font-size:.95rem;
+      margin-bottom:4px;
+    }
+
+    .step span{
+      color:var(--muted);
+      font-size:.84rem;
+    }
+
     main .wrap{
-      padding-top:22px;
+      padding-top:18px;
       padding-bottom:40px;
     }
 
@@ -122,7 +189,7 @@
 
     @media (min-width: 980px){
       .layout{
-        grid-template-columns: 390px 1fr;
+        grid-template-columns: 420px 1fr;
         align-items:start;
       }
     }
@@ -242,6 +309,22 @@
       margin:4px 0;
     }
 
+    .lawBox{
+      border:1px dashed rgba(255,255,255,.14);
+      background:rgba(255,255,255,.02);
+      border-radius:12px;
+      padding:12px;
+    }
+
+    .lawBox ul{
+      margin:8px 0 0;
+      padding-left:18px;
+    }
+
+    .lawBox li{
+      margin:5px 0;
+    }
+
     .marketTools{
       display:flex;
       justify-content:space-between;
@@ -299,6 +382,7 @@
       margin:0 0 10px;
       white-space:pre-wrap;
       font-size:1rem;
+      line-height:1.42;
     }
 
     .meta{
@@ -327,6 +411,12 @@
     .badge.type-standup{ border-color:rgba(113,211,154,.35); }
     .badge.type-caption{ border-color:rgba(138,184,255,.35); }
     .badge.type-answer{ border-color:rgba(215,181,109,.35); }
+
+    .badge.level-clip{ border-color:rgba(113,211,154,.34); }
+    .badge.level-joke{ border-color:rgba(138,184,255,.34); }
+    .badge.level-bit{ border-color:rgba(180,151,255,.34); }
+    .badge.level-act{ border-color:rgba(215,181,109,.34); }
+    .badge.level-set{ border-color:rgba(255,255,255,.34); }
 
     .actions{
       display:flex;
@@ -432,14 +522,13 @@
         <div>
           <h1>Carlton’s Loadies</h1>
           <p class="tagline">
-            Funny is funny. Drop a joke. Drop a bit. Caption the thing. Answer the dumb question.
-            <span class="small">Local-first for now. Juice-first immediately.</span>
+            Build a CLIP. Turn it into a JOKE. Stack JOKES into a BIT. Build BITS into an ACT. Build ACTS into a SET.
+            <span class="small">Avatar-first. Funny-first. No shitslinging.</span>
           </p>
           <div class="subline">
-            <span class="tinyPill">JOKE MARKET</span>
-            <span class="tinyPill">MINI STANDUP</span>
-            <span class="tinyPill">CAPTION THIS</span>
-            <span class="tinyPill">ASK / ANSWER</span>
+            <span class="tinyPill">CLIP → JOKE → BIT → ACT → SET</span>
+            <span class="tinyPill">AVATAR ONLY</span>
+            <span class="tinyPill">STRICTLY FUNNY MOTHERFUCKERS</span>
           </div>
         </div>
 
@@ -451,6 +540,29 @@
       </div>
     </div>
   </header>
+
+  <section class="hero">
+    <div class="wrap">
+      <div class="heroCard">
+        <div class="heroGrid">
+          <div>
+            <h2 class="heroTitle">Start small. Stack funny. Submit your shit.</h2>
+            <p class="heroText">
+              Up to :30 seconds. Name it. Topic it. String little pieces into bigger pieces.
+              Freedom is here. Real names are not required. Be weird. Be sharp. Don’t be a shitslinger.
+            </p>
+          </div>
+          <div class="ladder">
+            <div class="step"><strong>CLIP</strong><span>One quick unit. Up to :30.</span></div>
+            <div class="step"><strong>JOKE</strong><span>A single hit, premise, or line.</span></div>
+            <div class="step"><strong>BIT</strong><span>Multiple jokes with shape.</span></div>
+            <div class="step"><strong>ACT</strong><span>Bits with a point of view.</span></div>
+            <div class="step"><strong>SET</strong><span>Your ordered run.</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <main>
     <div class="wrap">
@@ -465,8 +577,8 @@
             <div class="cardBd stack">
               <div class="row">
                 <div>
-                  <label for="author">Name / Alias</label>
-                  <input id="author" placeholder="e.g. BmaC" autocomplete="nickname" />
+                  <label for="author">Avatar / Handle</label>
+                  <input id="author" placeholder="e.g. SHITSLINGER-KILLER-77" autocomplete="nickname" />
                 </div>
                 <div>
                   <label for="brow">BROW</label>
@@ -489,6 +601,34 @@
                   </select>
                 </div>
                 <div>
+                  <label for="level">Build Level</label>
+                  <select id="level">
+                    <option value="clip">CLIP</option>
+                    <option value="joke" selected>JOKE</option>
+                    <option value="bit">BIT</option>
+                    <option value="act">ACT</option>
+                    <option value="set">SET</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row">
+                <div>
+                  <label for="topic">Name / Topic</label>
+                  <input id="topic" placeholder="e.g. gas station sushi / dead uncle energy" />
+                </div>
+                <div>
+                  <label for="setName">Set / Series Name</label>
+                  <input id="setName" placeholder="e.g. Ranch Set / Divorce Act / Costco Arc" />
+                </div>
+              </div>
+
+              <div class="row">
+                <div>
+                  <label for="sequence">Sequence #</label>
+                  <input id="sequence" type="number" min="1" step="1" placeholder="1" />
+                </div>
+                <div>
                   <label for="tag">Format</label>
                   <select id="tag">
                     <option value="one-liner">One-liner</option>
@@ -504,12 +644,12 @@
 
               <div>
                 <label for="credit">Credit line</label>
-                <input id="credit" placeholder="Optional (e.g. — written by …)" />
+                <input id="credit" placeholder="Optional (e.g. co-written w/ lawn chair ghost)" />
               </div>
 
               <div>
                 <label for="jokeText">Text / Setup / Caption / Answer</label>
-                <textarea id="jokeText" placeholder="Drop a joke. Or don’t. Make it funny."></textarea>
+                <textarea id="jokeText" placeholder="Drop a joke. Build a bit. Start a set."></textarea>
               </div>
 
               <div id="videoModule" class="module">
@@ -524,8 +664,14 @@
 
               <button class="btn" id="postBtn">Post It</button>
 
-              <div class="small">
-                Rules: no hate garbage, no plagiarism, credit humans, keep it constructive.
+              <div class="lawBox">
+                <div class="small"><strong>HOUSE RULES</strong></div>
+                <ul class="small">
+                  <li>Avatar okay. Real names optional.</li>
+                  <li>Freedom is here. Shitslinging is not.</li>
+                  <li>One fuck up, maybe. Not two.</li>
+                  <li>Strictly funny motherfuckers.</li>
+                </ul>
               </div>
 
               <div class="row">
@@ -544,7 +690,7 @@
             </div>
             <div class="cardBd">
               <div class="promptBox">
-                <div class="small">Take these 3–4 cues. Give us :30. Or don’t. Drop a joke based on them.</div>
+                <div class="small">Take these 3–4 cues. Give us :30. Or turn them into a joke, bit, act, whatever.</div>
                 <ul class="promptList" id="chopsList"></ul>
               </div>
             </div>
@@ -585,7 +731,7 @@
 
           <div class="marketTools">
             <div class="left">
-              <input id="search" placeholder="Search jokes, captions, answers, riffs…" />
+              <input id="search" placeholder="Search jokes, sets, topics, avatars, riffs…" />
               <select id="filterTag">
                 <option value="all">All formats</option>
                 <option value="one-liner">One-liner</option>
@@ -617,8 +763,8 @@
 
   <footer>
     <div class="wrap">
-      <div>Laugh → Credit → Repeat</div>
-      <div class="small">Still local-first. Much less sterile.</div>
+      <div>CLIP → JOKE → BIT → ACT → SET</div>
+      <div class="small">Avatar-first. Funny-first. Still local-first.</div>
     </div>
   </footer>
 
@@ -646,7 +792,7 @@
     }
 
     function uid() {
-      const k = "cl_user_id_v2";
+      const k = "cl_user_id_v3";
       let id = localStorage.getItem(k);
       if (!id) {
         id = "u_" + Math.random().toString(36).slice(2) + "_" + Date.now();
@@ -655,7 +801,7 @@
       return id;
     }
 
-    const STORE_KEY = "carltons_loadies_v3";
+    const STORE_KEY = "carltons_loadies_v4";
 
     function loadPosts(){
       const raw = localStorage.getItem(STORE_KEY);
@@ -691,7 +837,9 @@
       ["raccoon", "Uber driver", "church shoes", "podcast"],
       ["pickleball", "midlife crisis", "protein powder", "group chat"],
       ["cowboy hat", "Tesla", "yard sale", "manifesting"],
-      ["insurance call", "gas station burrito", "LinkedIn", "apology text"]
+      ["insurance call", "gas station burrito", "LinkedIn", "apology text"],
+      ["church parking lot", "vape cloud", "stepdad confidence", "coupon code"],
+      ["Costco sample", "sword collection", "back pain", "manifest destiny"]
     ];
 
     const captionBank = [
@@ -699,7 +847,8 @@
       "A dog with human-level disappointment watching its owner explain something unnecessary.",
       "A family photo where one person clearly just heard the weirdest thing ever said.",
       "A guy at a barbecue pretending he knows how to smoke meat.",
-      "Someone absolutely certain this was a good idea five minutes ago."
+      "Someone absolutely certain this was a good idea five minutes ago.",
+      "A group of men acting like the folding table is sacred technology."
     ];
 
     const questionBank = [
@@ -707,7 +856,8 @@
       "What’s the most suspiciously confident food?",
       "What’s the least trustworthy sentence a stranger can say at a gas station?",
       "What object has the strongest divorced-dad energy?",
-      "Why does every group text eventually become unusable?"
+      "Why does every group text eventually become unusable?",
+      "What hobby instantly makes a guy sound more dangerous than he actually is?"
     ];
 
     function pickRandom(arr){
@@ -763,6 +913,16 @@
       return "UNI BROW";
     }
 
+    function levelLabel(level){
+      return String(level || "joke").toUpperCase();
+    }
+
+    function levelClass(level){
+      const v = String(level || "joke").toLowerCase();
+      if (["clip","joke","bit","act","set"].includes(v)) return `level-${v}`;
+      return "level-joke";
+    }
+
     function getVisiblePosts(){
       let list = [...state.posts];
 
@@ -781,21 +941,29 @@
       const q = state.search.trim().toLowerCase();
       if (q){
         list = list.filter(p => {
-          const inText = (p.text || "").toLowerCase().includes(q);
-          const inAuthor = (p.author || "").toLowerCase().includes(q);
-          const inCredit = (p.credit || "").toLowerCase().includes(q);
-          const inRiffs = (p.riffs || []).some(r =>
-            (r.text || "").toLowerCase().includes(q) ||
-            (r.author || "").toLowerCase().includes(q)
-          );
-          return inText || inAuthor || inCredit || inRiffs;
+          const hay = [
+            p.text || "",
+            p.author || "",
+            p.credit || "",
+            p.topic || "",
+            p.setName || "",
+            p.level || "",
+            ...(p.riffs || []).map(r => `${r.author} ${r.text}`)
+          ].join(" ").toLowerCase();
+          return hay.includes(q);
         });
       }
 
       if (state.sortMode === "top"){
         list.sort((a,b) => score(b) - score(a) || (b.createdAt || 0) - (a.createdAt || 0));
       } else {
-        list.sort((a,b) => (b.createdAt || 0) - (a.createdAt || 0));
+        list.sort((a,b) => {
+          const setCompare = String(a.setName || "").localeCompare(String(b.setName || ""));
+          if (String(a.setName || "") && String(a.setName || "") === String(b.setName || "")) {
+            return (Number(a.sequence || 9999) - Number(b.sequence || 9999)) || ((b.createdAt || 0) - (a.createdAt || 0));
+          }
+          return (b.createdAt || 0) - (a.createdAt || 0);
+        });
       }
 
       return list;
@@ -813,10 +981,11 @@
           <div class="emptyState">
             <div class="postText">No posts yet.</div>
             <div class="meta">
-              <span class="badge type-joke">Drop a joke</span>
-              <span class="badge type-standup">Upload a :30 bit</span>
-              <span class="badge type-caption">Caption something dumb</span>
-              <span class="badge type-answer">Answer a weird question</span>
+              <span class="badge type-joke">Start a JOKE</span>
+              <span class="badge type-standup">Upload a CLIP</span>
+              <span class="badge level-bit">Build a BIT</span>
+              <span class="badge level-act">Shape an ACT</span>
+              <span class="badge level-set">Submit a SET</span>
             </div>
           </div>
         `;
@@ -828,6 +997,8 @@
         const safeAuthor = escapeHTML(p.author || "Anonymous");
         const safeCredit = escapeHTML(p.credit || "");
         const safeTag = escapeHTML(p.tag || "other");
+        const safeTopic = escapeHTML(p.topic || "");
+        const safeSetName = escapeHTML(p.setName || "");
         const created = new Date(p.createdAt || Date.now()).toLocaleString();
         const isMine = p.ownerId === state.userId;
 
@@ -839,13 +1010,17 @@
           <article class="post" data-post="${p.id}">
             <div class="postTop">
               <div style="flex:1; min-width:240px;">
+                ${safeTopic ? `<div style="font-weight:800; margin-bottom:6px;">${safeTopic}</div>` : ""}
                 ${p.text ? `<p class="postText">${safeText}</p>` : ""}
                 ${p.videoDataUrl ? `<video controls src="${p.videoDataUrl}"></video>` : ""}
                 <div class="meta">
                   <span>— ${safeAuthor}</span>
                   <span class="badge ${typeClass(p.type)}">${typeLabel(p.type)}</span>
+                  <span class="badge ${levelClass(p.level)}">${levelLabel(p.level)}</span>
                   <span class="badge ${p.brow}">${browLabel(p.brow)}</span>
                   <span class="badge">${safeTag}</span>
+                  ${safeSetName ? `<span class="badge">SET: ${safeSetName}</span>` : ""}
+                  ${p.sequence ? `<span class="badge">#${p.sequence}</span>` : ""}
                   ${safeCredit ? `<span class="badge">${safeCredit}</span>` : ""}
                   <span class="badge">Score: ${score(p)}</span>
                   <span class="badge">${created}</span>
@@ -867,7 +1042,7 @@
               <summary>Riffs (${(p.riffs || []).length})</summary>
               <div class="riffList">${riffs || `<div class="small">No riffs yet. Add one.</div>`}</div>
               <div class="row" style="margin-top:10px;">
-                <input placeholder="Your name" data-riff-author="${p.id}" />
+                <input placeholder="Your avatar" data-riff-author="${p.id}" />
                 <input placeholder="Add a riff…" data-riff-text="${p.id}" />
               </div>
               <div style="margin-top:10px;">
@@ -964,6 +1139,11 @@
       const credit = ($("#credit").value || "").trim();
       const brow = $("#brow").value;
       const type = $("#postType").value;
+      const level = $("#level").value;
+      const topic = ($("#topic").value || "").trim();
+      const setName = ($("#setName").value || "").trim();
+      const sequenceRaw = ($("#sequence").value || "").trim();
+      const sequence = sequenceRaw ? Number(sequenceRaw) : null;
 
       if (type === "standup" && !state.stagedVideoDataUrl){
         return toast("Upload a mini standup clip first.");
@@ -977,6 +1157,10 @@
       const post = {
         id: now + Math.floor(Math.random() * 1000),
         type,
+        level,
+        topic,
+        setName,
+        sequence,
         text,
         author,
         tag,
@@ -995,6 +1179,9 @@
       state.posts.unshift(post);
 
       $("#jokeText").value = "";
+      $("#topic").value = "";
+      $("#setName").value = "";
+      $("#sequence").value = "";
       $("#videoUpload").value = "";
       $("#videoPreview").style.display = "none";
       $("#videoPreview").removeAttribute("src");
@@ -1011,8 +1198,12 @@
         {
           id: now + 1,
           type: "joke",
+          level: "clip",
+          topic: "GPS confidence",
+          setName: "Ranch Set",
+          sequence: 1,
           text: "I’m not saying I’m bad at directions, but my GPS once asked me for an estimate.",
-          author: "Sample",
+          author: "SampleGhost",
           tag: "one-liner",
           credit: "",
           brow: "uni",
@@ -1028,8 +1219,12 @@
         {
           id: now + 2,
           type: "caption",
+          level: "joke",
+          topic: "group text honesty",
+          setName: "Domestic Collapse",
+          sequence: 2,
           text: "When the family group text suddenly gets way too honest.",
-          author: "Sample",
+          author: "ChairProphet",
           tag: "other",
           credit: "",
           brow: "high",
@@ -1045,8 +1240,12 @@
         {
           id: now + 3,
           type: "answer",
+          level: "bit",
+          topic: "dog psychology",
+          setName: "Animal Lies",
+          sequence: 1,
           text: "Dogs freak out over keys because they know we only do two things: leave, or lie about leaving.",
-          author: "Sample",
+          author: "BadPastor69",
           tag: "premise",
           credit: "",
           brow: "low",
@@ -1110,7 +1309,9 @@
 
       if (act === "copy") {
         const payload =
-          `${p.text || "[mini standup clip]"}\n— ${p.author}` +
+          `${p.topic ? p.topic + "\n" : ""}${p.text || "[mini standup clip]"}\n— ${p.author}` +
+          (p.setName ? `\nSET: ${p.setName}` : "") +
+          (p.sequence ? `\nSEQ: ${p.sequence}` : "") +
           (p.credit ? `\n${p.credit}` : "");
         try {
           await navigator.clipboard.writeText(payload);
@@ -1125,6 +1326,10 @@
         const pack = btoa(unescape(encodeURIComponent(JSON.stringify({
           one: {
             type: p.type,
+            level: p.level,
+            topic: p.topic,
+            setName: p.setName,
+            sequence: p.sequence,
             text: p.text,
             author: p.author,
             tag: p.tag,
@@ -1206,6 +1411,10 @@
           state.posts.unshift({
             id: now + Math.floor(Math.random() * 1000),
             type: p.type || "joke",
+            level: p.level || "joke",
+            topic: String(p.topic || ""),
+            setName: String(p.setName || ""),
+            sequence: p.sequence || null,
             text: String(p.text || ""),
             author: String(p.author || "Anonymous"),
             tag: String(p.tag || "other"),
