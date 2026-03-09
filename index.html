@@ -29,6 +29,7 @@
 
     * { box-sizing: border-box; }
     html, body { margin:0; padding:0; }
+
     body{
       font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
       background:
@@ -40,18 +41,14 @@
     }
 
     header{
-      position:sticky;
-      top:0;
-      z-index:20;
-      backdrop-filter: blur(10px);
-      background:rgba(14,14,16,.86);
+      background:rgba(14,14,16,.96);
       border-bottom:1px solid var(--line);
     }
 
     .wrap{
       max-width:1160px;
       margin:0 auto;
-      padding:18px 16px;
+      padding:16px 16px;
     }
 
     .brandRow{
@@ -64,14 +61,14 @@
 
     h1{
       margin:0;
-      font-size:1.85rem;
+      font-size:1.75rem;
       letter-spacing:.2px;
     }
 
     .tagline{
       margin:6px 0 0;
       color:var(--muted);
-      max-width:78ch;
+      max-width:74ch;
     }
 
     .subline{
@@ -115,7 +112,7 @@
     }
 
     .hero{
-      padding-top:18px;
+      padding-top:10px;
     }
 
     .heroCard{
@@ -123,13 +120,13 @@
       border:1px solid var(--line);
       border-radius:18px;
       box-shadow:var(--shadow);
-      padding:18px;
+      padding:16px;
     }
 
     .heroGrid{
       display:grid;
       grid-template-columns:1.1fr .9fr;
-      gap:16px;
+      gap:14px;
     }
 
     @media (max-width: 900px){
@@ -137,15 +134,15 @@
     }
 
     .heroTitle{
-      margin:0 0 10px;
-      font-size:clamp(1.5rem, 3.2vw, 2.4rem);
+      margin:0 0 8px;
+      font-size:clamp(1.3rem, 3vw, 2rem);
       line-height:1.04;
     }
 
     .heroText{
       margin:0;
       color:var(--muted);
-      max-width:68ch;
+      max-width:64ch;
     }
 
     .ladder{
@@ -158,27 +155,44 @@
       .ladder{ grid-template-columns:repeat(2,1fr); }
     }
 
-    .step{
+    .stepBtn{
+      width:100%;
+      text-align:left;
       border:1px solid var(--line);
       background:var(--panel2);
+      color:var(--text);
       border-radius:12px;
       padding:10px;
-      min-height:84px;
+      min-height:78px;
+      cursor:pointer;
     }
 
-    .step strong{
+    .stepBtn.active{
+      border-color:var(--accent);
+      box-shadow:0 0 0 1px rgba(255,255,255,.12) inset;
+    }
+
+    .stepBtn strong{
       display:block;
       font-size:.95rem;
       margin-bottom:4px;
     }
 
-    .step span{
+    .stepBtn span{
+      display:block;
       color:var(--muted);
-      font-size:.84rem;
+      font-size:.8rem;
+    }
+
+    .stepCount{
+      margin-top:6px;
+      font-size:.78rem;
+      color:var(--text);
+      opacity:.9;
     }
 
     main .wrap{
-      padding-top:18px;
+      padding-top:14px;
       padding-bottom:40px;
     }
 
@@ -326,6 +340,43 @@
       margin:5px 0;
     }
 
+    .myGrid{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:8px;
+    }
+
+    @media (max-width: 520px){
+      .myGrid{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
+    .myBtn{
+      width:100%;
+      text-align:left;
+      border:1px solid var(--line);
+      background:var(--panel2);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px;
+      cursor:pointer;
+    }
+
+    .myBtn strong{
+      display:block;
+      font-size:.9rem;
+    }
+
+    .myBtn span{
+      font-size:.78rem;
+      color:var(--muted);
+    }
+
+    .myBtn.active{
+      border-color:var(--accent);
+    }
+
     .marketTools{
       display:flex;
       justify-content:space-between;
@@ -369,6 +420,7 @@
       border-radius:14px;
       background:rgba(255,255,255,.02);
       padding:12px;
+      scroll-margin-top:12px;
     }
 
     .postTop{
@@ -560,11 +612,31 @@
             </p>
           </div>
           <div class="ladder">
-            <div class="step"><strong>CLIP</strong><span>One quick unit. Up to :30.</span></div>
-            <div class="step"><strong>JOKE</strong><span>A single hit, premise, or line.</span></div>
-            <div class="step"><strong>BIT</strong><span>Multiple jokes with shape.</span></div>
-            <div class="step"><strong>ACT</strong><span>Bits with a point of view.</span></div>
-            <div class="step"><strong>SET</strong><span>Your ordered run.</span></div>
+            <button class="stepBtn" data-level-filter="clip" id="levelBtnClip">
+              <strong>CLIP</strong>
+              <span>One quick unit. Up to :30.</span>
+              <div class="stepCount" id="countClip">0</div>
+            </button>
+            <button class="stepBtn" data-level-filter="joke" id="levelBtnJoke">
+              <strong>JOKE</strong>
+              <span>A single hit, premise, or line.</span>
+              <div class="stepCount" id="countJoke">0</div>
+            </button>
+            <button class="stepBtn" data-level-filter="bit" id="levelBtnBit">
+              <strong>BIT</strong>
+              <span>Multiple jokes with shape.</span>
+              <div class="stepCount" id="countBit">0</div>
+            </button>
+            <button class="stepBtn" data-level-filter="act" id="levelBtnAct">
+              <strong>ACT</strong>
+              <span>Bits with a point of view.</span>
+              <div class="stepCount" id="countAct">0</div>
+            </button>
+            <button class="stepBtn" data-level-filter="set" id="levelBtnSet">
+              <strong>SET</strong>
+              <span>Your ordered run.</span>
+              <div class="stepCount" id="countSet">0</div>
+            </button>
           </div>
         </div>
       </div>
@@ -692,6 +764,41 @@
 
           <article class="card">
             <div class="cardHd">
+              <h3>My Stuff</h3>
+              <button class="btn secondary" id="clearLevelFilterBtn">Show All</button>
+            </div>
+            <div class="cardBd">
+              <div class="myGrid">
+                <button class="myBtn" data-my-level="clip">
+                  <strong>CLIPS</strong>
+                  <span id="myCountClip">0</span>
+                </button>
+                <button class="myBtn" data-my-level="joke">
+                  <strong>JOKES</strong>
+                  <span id="myCountJoke">0</span>
+                </button>
+                <button class="myBtn" data-my-level="bit">
+                  <strong>BITS</strong>
+                  <span id="myCountBit">0</span>
+                </button>
+                <button class="myBtn" data-my-level="act">
+                  <strong>ACTS</strong>
+                  <span id="myCountAct">0</span>
+                </button>
+                <button class="myBtn" data-my-level="set">
+                  <strong>SETS</strong>
+                  <span id="myCountSet">0</span>
+                </button>
+                <button class="myBtn" id="myAllBtn">
+                  <strong>MINE</strong>
+                  <span id="myCountAll">0 total</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="cardHd">
               <h3>Daily Premise Drop</h3>
               <button class="btn secondary" id="newDailyPremiseBtn">New Premise</button>
             </div>
@@ -813,7 +920,7 @@
     }
 
     function uid() {
-      const k = "cl_user_id_v4";
+      const k = "cl_user_id_v5";
       let id = localStorage.getItem(k);
       if (!id) {
         id = "u_" + Math.random().toString(36).slice(2) + "_" + Date.now();
@@ -822,7 +929,7 @@
       return id;
     }
 
-    const STORE_KEY = "carltons_loadies_v6";
+    const STORE_KEY = "carltons_loadies_v7";
 
     function loadPosts(){
       const raw = localStorage.getItem(STORE_KEY);
@@ -846,6 +953,7 @@
       search: "",
       filterTag: "all",
       filterType: "all",
+      filterLevel: "all",
       stagedVideoDataUrl: "",
       stagedVideoDuration: 0
     };
@@ -964,6 +1072,49 @@
       return state.posts.find(p => p.id === id);
     }
 
+    function getMine(level = "all"){
+      return state.posts.filter(p => p.ownerId === state.userId && (level === "all" || p.level === level));
+    }
+
+    function updateCounts(){
+      const levels = ["clip","joke","bit","act","set"];
+      for (const level of levels){
+        const allCount = state.posts.filter(p => p.level === level).length;
+        const myCount = getMine(level).length;
+        const mapAll = {
+          clip: "#countClip",
+          joke: "#countJoke",
+          bit: "#countBit",
+          act: "#countAct",
+          set: "#countSet"
+        };
+        const mapMine = {
+          clip: "#myCountClip",
+          joke: "#myCountJoke",
+          bit: "#myCountBit",
+          act: "#myCountAct",
+          set: "#myCountSet"
+        };
+        const a = $(mapAll[level]);
+        const m = $(mapMine[level]);
+        if (a) a.textContent = `${allCount} total`;
+        if (m) m.textContent = `${myCount} mine`;
+      }
+      $("#myCountAll").textContent = `${getMine("all").length} total`;
+    }
+
+    function updateLevelButtons(){
+      document.querySelectorAll("[data-level-filter]").forEach(btn => {
+        btn.classList.toggle("active", state.filterLevel === btn.dataset.levelFilter);
+      });
+
+      document.querySelectorAll("[data-my-level]").forEach(btn => {
+        btn.classList.toggle("active", state.sortMode === "mine" && state.filterLevel === btn.dataset.myLevel);
+      });
+
+      $("#myAllBtn").classList.toggle("active", state.sortMode === "mine" && state.filterLevel === "all");
+    }
+
     function getVisiblePosts(){
       let list = [...state.posts];
 
@@ -977,6 +1128,10 @@
 
       if (state.filterType !== "all"){
         list = list.filter(p => p.type === state.filterType);
+      }
+
+      if (state.filterLevel !== "all"){
+        list = list.filter(p => p.level === state.filterLevel);
       }
 
       const q = state.search.trim().toLowerCase();
@@ -1019,13 +1174,18 @@
     const countLabel = $("#countLabel");
 
     function render(){
+      updateCounts();
+      updateLevelButtons();
+
       const list = getVisiblePosts();
-      countLabel.textContent = `${list.length} post${list.length === 1 ? "" : "s"}`;
+      const modeLabel = state.sortMode === "mine" ? "my" : "";
+      const levelLabelText = state.filterLevel !== "all" ? ` ${state.filterLevel}` : "";
+      countLabel.textContent = `${list.length}${modeLabelText}${levelLabelText ? levelLabelText : ""} post${list.length === 1 ? "" : "s"}`;
 
       if (!list.length){
         jokeFeed.innerHTML = `
           <div class="emptyState">
-            <div class="postText">No posts yet.</div>
+            <div class="postText">No posts here yet.</div>
             <div class="meta">
               <span class="badge type-joke">Start a JOKE</span>
               <span class="badge type-standup">Upload a CLIP</span>
@@ -1055,7 +1215,7 @@
         ).join("");
 
         return `
-          <article class="post" data-post="${p.id}">
+          <article class="post" id="post-${p.id}" data-post="${p.id}">
             <div class="postTop">
               <div style="flex:1; min-width:240px;">
                 ${safeTopic ? `<div style="font-weight:800; margin-bottom:6px;">${safeTopic}</div>` : ""}
@@ -1119,9 +1279,46 @@
       render();
     }
 
+    function setLevelFilter(level){
+      state.filterLevel = level;
+      render();
+    }
+
     $("#modeTop").addEventListener("click", () => setMode("top"));
     $("#modeNew").addEventListener("click", () => setMode("new"));
     $("#modeMine").addEventListener("click", () => setMode("mine"));
+
+    document.querySelectorAll("[data-level-filter]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.filterLevel = btn.dataset.levelFilter;
+        render();
+      });
+    });
+
+    document.querySelectorAll("[data-my-level]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        state.sortMode = "mine";
+        state.filterLevel = btn.dataset.myLevel;
+        $("#modeTop").setAttribute("aria-pressed", "false");
+        $("#modeNew").setAttribute("aria-pressed", "false");
+        $("#modeMine").setAttribute("aria-pressed", "true");
+        render();
+      });
+    });
+
+    $("#myAllBtn").addEventListener("click", () => {
+      state.sortMode = "mine";
+      state.filterLevel = "all";
+      $("#modeTop").setAttribute("aria-pressed", "false");
+      $("#modeNew").setAttribute("aria-pressed", "false");
+      $("#modeMine").setAttribute("aria-pressed", "true");
+      render();
+    });
+
+    $("#clearLevelFilterBtn").addEventListener("click", () => {
+      state.filterLevel = "all";
+      render();
+    });
 
     $("#search").addEventListener("input", (e) => {
       state.search = e.target.value;
