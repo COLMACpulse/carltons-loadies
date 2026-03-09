@@ -22,6 +22,7 @@
       --green:#71d39a;
       --blue:#8ab8ff;
       --purple:#b497ff;
+      --orange:#ff9a3c;
       --shadow:0 12px 32px rgba(0,0,0,.35);
       --r:14px;
     }
@@ -418,6 +419,12 @@
     .badge.level-act{ border-color:rgba(215,181,109,.34); }
     .badge.level-set{ border-color:rgba(255,255,255,.34); }
 
+    .badge.hot{
+      border-color:var(--orange);
+      color:var(--orange);
+      box-shadow:0 0 0 1px rgba(255,154,60,.1), 0 0 16px rgba(255,154,60,.08);
+    }
+
     .actions{
       display:flex;
       gap:8px;
@@ -685,6 +692,20 @@
 
           <article class="card">
             <div class="cardHd">
+              <h3>Daily Premise Drop</h3>
+              <button class="btn secondary" id="newDailyPremiseBtn">New Premise</button>
+            </div>
+            <div class="cardBd">
+              <div class="promptBox">
+                <div class="small">One fire. One room. One target.</div>
+                <div id="dailyPremiseText" class="postText" style="margin-top:8px; margin-bottom:10px;"></div>
+                <button class="btn secondary" id="useDailyPremiseBtn">Use This Premise</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="card">
+            <div class="cardHd">
               <h3>Test Your Chops</h3>
               <button class="btn secondary" id="newChopsBtn">New Cues</button>
             </div>
@@ -792,7 +813,7 @@
     }
 
     function uid() {
-      const k = "cl_user_id_v3";
+      const k = "cl_user_id_v4";
       let id = localStorage.getItem(k);
       if (!id) {
         id = "u_" + Math.random().toString(36).slice(2) + "_" + Date.now();
@@ -801,7 +822,7 @@
       return id;
     }
 
-    const STORE_KEY = "carltons_loadies_v4";
+    const STORE_KEY = "carltons_loadies_v6";
 
     function loadPosts(){
       const raw = localStorage.getItem(STORE_KEY);
@@ -830,6 +851,10 @@
     };
 
     const score = (p) => (p.laughs || 0) - (p.mehs || 0);
+
+    function addHeat(post){
+      post.heat = Date.now();
+    }
 
     const chopsBank = [
       ["dentist", "airplane food", "crypto", "mother-in-law"],
@@ -860,6 +885,17 @@
       "What hobby instantly makes a guy sound more dangerous than he actually is?"
     ];
 
+    const dailyPremiseBank = [
+      "A cowboy discovers therapy.",
+      "Church parking lot energy.",
+      "Gas station sushi confidence.",
+      "The least intimidating threat ever spoken.",
+      "Costco sample addiction.",
+      "A guy who thinks buying one tool made him a contractor.",
+      "Midlife crisis motorcycle logic.",
+      "A man explaining Bluetooth with full confidence and zero accuracy."
+    ];
+
     function pickRandom(arr){
       return arr[Math.floor(Math.random() * arr.length)];
     }
@@ -869,6 +905,7 @@
       $("#chopsList").innerHTML = chops.map(c => `<li>${escapeHTML(c)}</li>`).join("");
       $("#captionPromptText").textContent = pickRandom(captionBank);
       $("#questionPromptText").textContent = pickRandom(questionBank);
+      $("#dailyPremiseText").textContent = pickRandom(dailyPremiseBank);
     }
 
     function fileToDataUrl(file){
@@ -923,6 +960,10 @@
       return "level-joke";
     }
 
+    function findPostById(id){
+      return state.posts.find(p => p.id === id);
+    }
+
     function getVisiblePosts(){
       let list = [...state.posts];
 
@@ -941,6 +982,7 @@
       const q = state.search.trim().toLowerCase();
       if (q){
         list = list.filter(p => {
+          const parent = findPostById(p.parentId);
           const hay = [
             p.text || "",
             p.author || "",
@@ -948,6 +990,7 @@
             p.topic || "",
             p.setName || "",
             p.level || "",
+            parent?.author || "",
             ...(p.riffs || []).map(r => `${r.author} ${r.text}`)
           ].join(" ").toLowerCase();
           return hay.includes(q);
@@ -955,10 +998,13 @@
       }
 
       if (state.sortMode === "top"){
-        list.sort((a,b) => score(b) - score(a) || (b.createdAt || 0) - (a.createdAt || 0));
+        list.sort((a,b) => {
+          const hotA = (Date.now() - (a.heat || 0)) < 300000 ? 1 : 0;
+          const hotB = (Date.now() - (b.heat || 0)) < 300000 ? 1 : 0;
+          return hotB - hotA || score(b) - score(a) || (b.createdAt || 0) - (a.createdAt || 0);
+        });
       } else {
         list.sort((a,b) => {
-          const setCompare = String(a.setName || "").localeCompare(String(b.setName || ""));
           if (String(a.setName || "") && String(a.setName || "") === String(b.setName || "")) {
             return (Number(a.sequence || 9999) - Number(b.sequence || 9999)) || ((b.createdAt || 0) - (a.createdAt || 0));
           }
@@ -1001,6 +1047,8 @@
         const safeSetName = escapeHTML(p.setName || "");
         const created = new Date(p.createdAt || Date.now()).toLocaleString();
         const isMine = p.ownerId === state.userId;
+        const hot = (Date.now() - (p.heat || 0)) < 300000;
+        const parent = findPostById(p.parentId);
 
         const riffs = (p.riffs || []).map(r =>
           `<div class="riffItem"><em>${escapeHTML(r.author || "Anonymous")}:</em> ${escapeHTML(r.text || "")}</div>`
@@ -1015,6 +1063,7 @@
                 ${p.videoDataUrl ? `<video controls src="${p.videoDataUrl}"></video>` : ""}
                 <div class="meta">
                   <span>— ${safeAuthor}</span>
+                  ${hot ? `<span class="badge hot">🔥 HOT</span>` : ""}
                   <span class="badge ${typeClass(p.type)}">${typeLabel(p.type)}</span>
                   <span class="badge ${levelClass(p.level)}">${levelLabel(p.level)}</span>
                   <span class="badge ${p.brow}">${browLabel(p.brow)}</span>
@@ -1026,11 +1075,13 @@
                   <span class="badge">${created}</span>
                   ${isMine ? `<span class="badge">Mine</span>` : ""}
                 </div>
+                ${parent ? `<div class="meta" style="margin-top:8px;"><span class="badge">Forked from: ${escapeHTML(parent.author || "Anonymous")}</span></div>` : ""}
               </div>
 
               <div class="actions">
                 <button class="btn secondary" data-act="copy" data-id="${p.id}">Copy</button>
                 <button class="btn secondary" data-act="share" data-id="${p.id}">Share</button>
+                <button class="btn secondary" data-act="fork" data-id="${p.id}">Fork</button>
                 <button class="btn" data-act="laugh" data-id="${p.id}">😂 ${p.laughs || 0}</button>
                 <button class="btn secondary" data-act="meh" data-id="${p.id}">😐 ${p.mehs || 0}</button>
                 <button class="btn secondary" data-act="tip" data-id="${p.id}">💸 ${p.tips || 0}</button>
@@ -1085,6 +1136,19 @@
     $("#filterType").addEventListener("change", (e) => {
       state.filterType = e.target.value;
       render();
+    });
+
+    $("#newDailyPremiseBtn").addEventListener("click", () => {
+      $("#dailyPremiseText").textContent = pickRandom(dailyPremiseBank);
+    });
+
+    $("#useDailyPremiseBtn").addEventListener("click", () => {
+      const premise = $("#dailyPremiseText").textContent.trim();
+      $("#topic").value = premise;
+      if (!$("#jokeText").value.trim()) {
+        $("#jokeText").value = `Premise: ${premise}\n\n`;
+      }
+      toast("Daily premise loaded.");
     });
 
     $("#newChopsBtn").addEventListener("click", refreshPrompts);
@@ -1173,7 +1237,9 @@
         tips: 0,
         riffs: [],
         createdAt: now,
-        ownerId: state.userId
+        ownerId: state.userId,
+        parentId: null,
+        heat: now
       };
 
       state.posts.unshift(post);
@@ -1214,7 +1280,9 @@
           tips: 0,
           riffs: [],
           createdAt: now + 1,
-          ownerId: ""
+          ownerId: "",
+          parentId: null,
+          heat: now + 1
         },
         {
           id: now + 2,
@@ -1235,7 +1303,9 @@
           tips: 0,
           riffs: [],
           createdAt: now + 2,
-          ownerId: ""
+          ownerId: "",
+          parentId: null,
+          heat: now + 2
         },
         {
           id: now + 3,
@@ -1256,7 +1326,9 @@
           tips: 0,
           riffs: [],
           createdAt: now + 3,
-          ownerId: ""
+          ownerId: "",
+          parentId: null,
+          heat: now + 3
         }
       ];
 
@@ -1272,11 +1344,12 @@
       const id = Number(btn.dataset.id);
       if (!act || !id) return;
 
-      const p = state.posts.find(x => x.id === id);
+      const p = findPostById(id);
       if (!p) return;
 
       if (act === "laugh") {
         p.laughs = (p.laughs || 0) + 1;
+        addHeat(p);
         return persistAndRender();
       }
 
@@ -1287,7 +1360,31 @@
 
       if (act === "tip") {
         p.tips = (p.tips || 0) + 1;
+        addHeat(p);
         return persistAndRender("Tip registered. Payments later.");
+      }
+
+      if (act === "fork") {
+        const now = Date.now();
+        const fork = {
+          ...p,
+          id: now + Math.floor(Math.random() * 1000),
+          text: p.text,
+          topic: p.topic,
+          author: ($("#author").value || "").trim() || "Anonymous",
+          credit: p.credit || "",
+          laughs: 0,
+          mehs: 0,
+          tips: 0,
+          riffs: [],
+          createdAt: now,
+          ownerId: state.userId,
+          parentId: p.id,
+          heat: now
+        };
+        state.posts.unshift(fork);
+        addHeat(p);
+        return persistAndRender("Forked joke.");
       }
 
       if (act === "del") {
@@ -1303,6 +1400,7 @@
         const text = (t?.value || "").trim();
         if (!text) return toast("Add a riff first.");
         p.riffs.push({ author, text, at: Date.now() });
+        addHeat(p);
         t.value = "";
         return persistAndRender("Riff added.");
       }
@@ -1334,7 +1432,8 @@
             author: p.author,
             tag: p.tag,
             credit: p.credit,
-            brow: p.brow
+            brow: p.brow,
+            parentId: p.parentId || null
           }
         }))));
         const url = `${location.origin}${location.pathname}#one=${pack}`;
@@ -1427,7 +1526,9 @@
             tips: 0,
             riffs: [],
             createdAt: now,
-            ownerId: ""
+            ownerId: "",
+            parentId: p.parentId || null,
+            heat: now
           });
           persistAndRender("Imported 1 post from link.");
         }
