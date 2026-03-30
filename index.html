@@ -911,16 +911,16 @@
     <div class="heroWrap heroDoorWrap">
       <div class="heroDoorGrid">
         <div class="heroCopy heroCopyDoor">
-          <div class="heroKicker">JOKE MARKET / BAG ONLY / FUNNY FIRST</div>
+          <div class="heroKicker">WHAT’S A LOADIE? / MINI STAND-UP / YOUR BAG</div>
           <h2 class="heroTitle">Carlton’s Loadies</h2>
           <p class="heroText">Funny is funny. Nobody cares who you are. Be funny.</p>
-          <p class="heroSubtext">Make something. Browse the market. Build your bag. Start simple, then go deeper.</p>
+          <p class="heroSubtext">Mini stand-up up front. Load up when you have something. Jump into conversations. Build your bag.</p>
           <div class="doorButtons" role="navigation" aria-label="Main lanes">
-            <button class="doorBtn" id="doorMakeBtn" type="button">MAKE</button>
-            <button class="doorBtn" id="doorBrowseBtn" type="button">BROWSE</button>
+            <button class="doorBtn" id="doorMakeBtn" type="button">MINI STAND-UP</button>
+            <button class="doorBtn" id="doorBrowseBtn" type="button">CONVERSATIONS</button>
             <button class="doorBtn" id="doorBagBtn" type="button">YOUR BAG</button>
           </div>
-          <div class="doorHint" id="doorHint">Pick a lane. The rest stays out of your face until you want it.</div>
+          <div class="doorHint" id="doorHint">Start with the bagged performer lane. The rest can wait until you want it.</div>
           <div class="subline">
             <span class="tinyPill">CLIP → JOKE → BIT → ACT → SET</span>
             <span class="tinyPill">EVERYONE GETS A BAG</span>
@@ -968,8 +968,8 @@
     <div class="wrap">
       <div class="layout">
         <section class="frontNote" id="frontNote">
-          <h3>Three doors. That's it.</h3>
-          <p><strong>MAKE</strong> opens the creation lane. <strong>BROWSE</strong> opens the market and prompts. <strong>YOUR BAG</strong> opens identity. Keep the front door simple. Go deeper only when you want to.</p>
+          <h3>Front door first.</h3>
+          <p><strong>MINI STAND-UP</strong> gets you straight to the camera lane. <strong>CONVERSATIONS</strong> opens the market and prompt world. <strong>YOUR BAG</strong> handles identity. Keep the front door simple. Go deeper only when you want to.</p>
         </section>
         <!-- LEFT COLUMN -->
         <section class="stack">
@@ -3053,7 +3053,7 @@
         if (lane === 'make') hint.textContent = 'Make opens the tool bench. Creation first. Everything else gets out of the way.';
         else if (lane === 'browse') hint.textContent = 'Browse opens the market, prompts, and sorting controls.';
         else if (lane === 'bag') hint.textContent = 'Your Bag opens identity. Handle, bag, photo, damage, done.';
-        else hint.textContent = 'Pick a lane. The rest stays out of your face until you want it.';
+        else hint.textContent = 'Start with the bagged performer lane. The rest can wait until you want it.';
       }
       const pillRow = document.querySelector('.pillRow');
       if (pillRow) pillRow.style.display = lane === 'browse' ? 'flex' : 'none';
