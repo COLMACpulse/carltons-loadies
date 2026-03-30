@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <title>Carlton’s Loadies — Joke Market</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Funny is funny. Build clips into jokes, jokes into bits, bits into acts, acts into sets." />
+  <meta name="description" content="Funny is funny. Nobody cares who you are. Be funny." />
 
   <style>
     :root{
@@ -41,8 +41,12 @@
     }
 
     header{
-      background:rgba(14,14,16,.96);
+      position:sticky;
+      top:0;
+      z-index:30;
+      background:rgba(14,14,16,.92);
       border-bottom:1px solid var(--line);
+      backdrop-filter:blur(8px);
     }
 
     .wrap{
@@ -55,7 +59,7 @@
       display:flex;
       gap:16px;
       justify-content:space-between;
-      align-items:flex-start;
+      align-items:center;
       flex-wrap:wrap;
     }
 
@@ -95,7 +99,6 @@
       gap:8px;
       flex-wrap:wrap;
       align-items:center;
-      margin-top:10px;
     }
 
     .pill{
@@ -112,37 +115,112 @@
     }
 
     .hero{
-      padding-top:10px;
+      position:relative;
+      overflow:hidden;
+      border-bottom:1px solid var(--line);
+      background:
+        linear-gradient(180deg, rgba(7,7,9,.2), rgba(7,7,9,.72)),
+        radial-gradient(circle at top left, rgba(215,181,109,.15), transparent 28%),
+        radial-gradient(circle at 82% 8%, rgba(255,255,255,.06), transparent 18%),
+        #0f0f11;
     }
 
-    .heroCard{
-      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
-      border:1px solid var(--line);
-      border-radius:18px;
-      box-shadow:var(--shadow);
-      padding:16px;
+    .hero::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:url("bag-hero-header.png") right center / min(54vw,760px) auto no-repeat;
+      opacity:.52;
+      pointer-events:none;
+      transform:translateX(4%);
+    }
+
+    .hero::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(90deg, rgba(10,10,12,.96) 0%, rgba(10,10,12,.88) 34%, rgba(10,10,12,.44) 58%, rgba(10,10,12,.18) 100%),
+        linear-gradient(180deg, rgba(10,10,12,.1) 0%, rgba(10,10,12,.35) 100%);
+      pointer-events:none;
+    }
+
+    .heroWrap{
+      position:relative;
+      z-index:2;
+      max-width:1160px;
+      margin:0 auto;
+      padding:24px 16px 18px;
     }
 
     .heroGrid{
       display:grid;
-      grid-template-columns:1.1fr .9fr;
-      gap:14px;
+      grid-template-columns:minmax(0, 1fr) minmax(260px, 520px);
+      gap:18px;
+      align-items:end;
     }
 
-    @media (max-width: 900px){
-      .heroGrid{ grid-template-columns:1fr; }
+    @media (max-width: 960px){
+      .hero::before{
+        background-position:center top;
+        background-size:cover;
+        opacity:.24;
+        transform:none;
+      }
+
+      .heroGrid{
+        grid-template-columns:1fr;
+      }
+    }
+
+    .heroCopy{
+      padding:14px 0 6px;
+      max-width:680px;
+    }
+
+    .heroKicker{
+      margin:0 0 10px;
+      color:var(--gold);
+      font-size:.82rem;
+      letter-spacing:.18em;
+      font-weight:800;
     }
 
     .heroTitle{
-      margin:0 0 8px;
-      font-size:clamp(1.3rem, 3vw, 2rem);
-      line-height:1.04;
+      margin:0;
+      font-size:clamp(2rem, 5vw, 4.2rem);
+      line-height:.95;
+      letter-spacing:-.03em;
+      max-width:7ch;
+      text-wrap:balance;
     }
 
     .heroText{
-      margin:0;
+      margin:14px 0 0;
+      color:#e2e2e7;
+      font-size:clamp(1.05rem, 2.1vw, 1.5rem);
+      line-height:1.14;
+      max-width:20ch;
+      font-weight:700;
+    }
+
+    .heroSubtext{
+      margin:12px 0 0;
       color:var(--muted);
-      max-width:64ch;
+      max-width:52ch;
+      font-size:.98rem;
+    }
+
+    .heroCard{
+      position:relative;
+      z-index:2;
+      margin-top:18px;
+      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.09);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:14px;
+      backdrop-filter:blur(6px);
     }
 
     .ladder{
@@ -153,6 +231,8 @@
 
     @media (max-width: 760px){
       .ladder{ grid-template-columns:repeat(2,1fr); }
+      .heroTitle{ max-width:none; }
+      .heroText{ max-width:26ch; }
     }
 
     .stepBtn{
@@ -718,15 +798,7 @@
       <div class="brandRow">
         <div>
           <h1>Carlton’s Loadies</h1>
-          <p class="tagline">
-            Build a CLIP. Turn it into a JOKE. Stack JOKES into a BIT. Build BITS into an ACT. Build ACTS into a SET.
-            <span class="small">Avatar-first. Funny-first. No shitslinging.</span>
-          </p>
-          <div class="subline">
-            <span class="tinyPill">CLIP → JOKE → BIT → ACT → SET</span>
-            <span class="tinyPill">AVATAR ONLY</span>
-            <span class="tinyPill">STRICTLY FUNNY MOTHERFUCKERS</span>
-          </div>
+          <p class="tagline">Funny is funny. Nobody cares who you are. Be funny.</p>
         </div>
 
         <div class="pillRow" aria-label="Mode">
@@ -739,43 +811,51 @@
   </header>
 
   <section class="hero">
-    <div class="wrap">
+    <div class="heroWrap">
+      <div class="heroGrid">
+        <div class="heroCopy">
+          <div class="heroKicker">JOKE MARKET / BAG ONLY / FUNNY FIRST</div>
+          <h2 class="heroTitle">Carlton’s Loadies</h2>
+          <p class="heroText">Funny is funny. Nobody cares who you are. Be funny.</p>
+          <p class="heroSubtext">
+            Start with a clip, punch it into a joke, stack jokes into bits, bits into acts, and acts into sets.
+            Keep the identity simple. Keep the funny sharp.
+          </p>
+          <div class="subline">
+            <span class="tinyPill">CLIP → JOKE → BIT → ACT → SET</span>
+            <span class="tinyPill">EVERYONE GETS A BAG</span>
+            <span class="tinyPill">STRICTLY FUNNY MOTHERFUCKERS</span>
+          </div>
+        </div>
+      </div>
+
       <div class="heroCard">
-        <div class="heroGrid">
-          <div>
-            <h2 class="heroTitle">Start small. Stack funny. Submit your shit.</h2>
-            <p class="heroText">
-              Up to :30 seconds. Name it. Topic it. String little pieces into bigger pieces.
-              Freedom is here. Real names are not required. Be weird. Be sharp. Don’t be a shitslinger.
-            </p>
-          </div>
-          <div class="ladder">
-            <button class="stepBtn" data-level-filter="clip" id="levelBtnClip">
-              <strong>CLIP</strong>
-              <span>One quick unit. Up to :30.</span>
-              <div class="stepCount" id="countClip">0</div>
-            </button>
-            <button class="stepBtn" data-level-filter="joke" id="levelBtnJoke">
-              <strong>JOKE</strong>
-              <span>A single hit, premise, or line.</span>
-              <div class="stepCount" id="countJoke">0</div>
-            </button>
-            <button class="stepBtn" data-level-filter="bit" id="levelBtnBit">
-              <strong>BIT</strong>
-              <span>Multiple jokes with shape.</span>
-              <div class="stepCount" id="countBit">0</div>
-            </button>
-            <button class="stepBtn" data-level-filter="act" id="levelBtnAct">
-              <strong>ACT</strong>
-              <span>Bits with a point of view.</span>
-              <div class="stepCount" id="countAct">0</div>
-            </button>
-            <button class="stepBtn" data-level-filter="set" id="levelBtnSet">
-              <strong>SET</strong>
-              <span>Your ordered run.</span>
-              <div class="stepCount" id="countSet">0</div>
-            </button>
-          </div>
+        <div class="ladder">
+          <button class="stepBtn" data-level-filter="clip" id="levelBtnClip">
+            <strong>CLIP</strong>
+            <span>Grab one quick piece. Up to :30.</span>
+            <div class="stepCount" id="countClip">0</div>
+          </button>
+          <button class="stepBtn" data-level-filter="joke" id="levelBtnJoke">
+            <strong>JOKE</strong>
+            <span>Find the hit. Premise, line, or angle.</span>
+            <div class="stepCount" id="countJoke">0</div>
+          </button>
+          <button class="stepBtn" data-level-filter="bit" id="levelBtnBit">
+            <strong>BIT</strong>
+            <span>Stack the good stuff into shape.</span>
+            <div class="stepCount" id="countBit">0</div>
+          </button>
+          <button class="stepBtn" data-level-filter="act" id="levelBtnAct">
+            <strong>ACT</strong>
+            <span>Build a point of view people remember.</span>
+            <div class="stepCount" id="countAct">0</div>
+          </button>
+          <button class="stepBtn" data-level-filter="set" id="levelBtnSet">
+            <strong>SET</strong>
+            <span>Order the run. Make the room yours.</span>
+            <div class="stepCount" id="countSet">0</div>
+          </button>
         </div>
       </div>
     </div>
@@ -1141,8 +1221,8 @@
 
   <footer>
     <div class="wrap">
-      <div>CLIP → JOKE → BIT → ACT → SET</div>
-      <div class="small">Avatar-first. Funny-first. Still local-first.</div>
+      <div>Funny is funny. Nobody cares who you are. Be funny.</div>
+      <div class="small">Bag-first. Funny-first. Still local-first.</div>
     </div>
   </footer>
 
