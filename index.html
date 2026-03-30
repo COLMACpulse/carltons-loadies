@@ -558,6 +558,118 @@
       font-size:.84rem;
     }
 
+    .identityCard{
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .identityGrid{
+      display:grid;
+      grid-template-columns:220px 1fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    @media (max-width: 720px){
+      .identityGrid{ grid-template-columns:1fr; }
+    }
+
+    .bagPreviewWrap{
+      border:1px dashed rgba(255,255,255,.14);
+      background:rgba(255,255,255,.02);
+      border-radius:16px;
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center;
+    }
+
+    .bagPreview{
+      width:180px;
+      aspect-ratio:1/1;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+
+    .bagPreview img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .avatarMeta{
+      width:100%;
+      text-align:center;
+      color:var(--muted);
+      font-size:.84rem;
+    }
+
+    .avatarRow{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .avatarStamp{
+      width:52px;
+      height:52px;
+      border-radius:14px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      background:var(--panel2);
+      flex:0 0 auto;
+    }
+
+    .avatarStamp img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .avatarFallback{
+      width:100%;
+      height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--muted);
+      font-size:.72rem;
+      font-weight:800;
+      letter-spacing:.08em;
+    }
+
+    .postHeaderMain{
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .riffAuthorInputWrap{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      min-width:180px;
+    }
+
+    .identityActions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+
     .emptyState{
       border:1px dashed rgba(255,255,255,.14);
       border-radius:14px;
@@ -674,6 +786,72 @@
       <div class="layout">
         <!-- LEFT COLUMN -->
         <section class="stack">
+          
+          <article class="identityCard">
+            <div class="cardHd">
+              <h2>YOUR BAG</h2>
+              <button class="btn secondary" id="saveBagBtn">Save Bag</button>
+            </div>
+            <div class="cardBd">
+              <div class="identityGrid">
+                <div class="bagPreviewWrap">
+                  <div class="bagPreview" id="bagPreview"><div class="avatarFallback">NO BAG</div></div>
+                  <div class="avatarMeta" id="bagMeta">Everyone gets a bag. Pick one. Or feed it a photo.</div>
+                </div>
+
+                <div class="stack">
+                  <div class="row">
+                    <div>
+                      <label for="profileHandle">Handle</label>
+                      <input id="profileHandle" placeholder="e.g. BAGMAN-77" autocomplete="nickname" />
+                    </div>
+                    <div>
+                      <label for="bagStyle">Bag</label>
+                      <select id="bagStyle">
+                        <option value="kraft">KRAFT</option>
+                        <option value="white">WHITE</option>
+                        <option value="black">BLACK</option>
+                        <option value="grocery">GROCERY</option>
+                        <option value="lunch">LUNCH</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div>
+                      <label for="eyeStyle">Eye Holes</label>
+                      <select id="eyeStyle">
+                        <option value="round">ROUND</option>
+                        <option value="wide">WIDE</option>
+                        <option value="squint">SQUINT</option>
+                        <option value="x">X CUT</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="bagMark">Marker / Damage</label>
+                      <select id="bagMark">
+                        <option value="plain">PLAIN</option>
+                        <option value="scribble">SCRIBBLE</option>
+                        <option value="tape">TAPE</option>
+                        <option value="stitch">STITCH</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="identityActions">
+                    <button class="btn secondary" type="button" id="pickBagPhotoBtn">Take / Choose Photo</button>
+                    <button class="btn secondary" type="button" id="makeBagFromPhotoBtn">Transform Photo → Bag</button>
+                    <button class="btn secondary" type="button" id="plainBagBtn">Plain Bag Only</button>
+                    <button class="btn danger" type="button" id="clearBagBtn">Clear Bag</button>
+                    <input id="bagPhotoInput" type="file" accept="image/*" capture="user" style="display:none;" />
+                  </div>
+
+                  <div class="small">Constraint is the sauce: one house style, different bags. This bag becomes your visible avatar on posts and riffs.</div>
+                </div>
+              </div>
+            </div>
+          </article>
+
           <article class="card">
             <div class="cardHd">
               <h2>Drop Something Funny</h2>
@@ -940,6 +1118,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+  
   <script>
     const $ = (sel) => document.querySelector(sel);
 
@@ -971,40 +1150,385 @@
       return id;
     }
 
-    const STORE_KEY = "carltons_loadies_v7";
+    const STORE_KEY = "carltons_loadies_v8";
+    const LEGACY_STORE_KEY = "carltons_loadies_v7";
+    const MEDIA_DB_NAME = "carltons_loadies_media_db";
+    const MEDIA_STORE_NAME = "clips";
+    let mediaDbPromise = null;
+
+    function normalizePost(post){
+      return {
+        id: post.id || (Date.now() + Math.floor(Math.random() * 1000)),
+        type: post.type || "joke",
+        level: post.level || "joke",
+        topic: String(post.topic || ""),
+        setName: String(post.setName || ""),
+        sequence: post.sequence || null,
+        text: String(post.text || ""),
+        author: String(post.author || "Anonymous"),
+        avatarUrl: String(post.avatarUrl || ""),
+        tag: String(post.tag || "other"),
+        credit: String(post.credit || ""),
+        brow: String(post.brow || "uni"),
+        videoDataUrl: String(post.videoDataUrl || ""),
+        videoRef: String(post.videoRef || ""),
+        videoDuration: Number(post.videoDuration || 0),
+        laughs: Number(post.laughs || 0),
+        mehs: Number(post.mehs || 0),
+        tips: Number(post.tips || 0),
+        riffs: Array.isArray(post.riffs) ? post.riffs.map(r => ({
+          author: String(r.author || "Anonymous"),
+          avatarUrl: String(r.avatarUrl || ""),
+          text: String(r.text || ""),
+          at: Number(r.at || Date.now())
+        })) : [],
+        createdAt: Number(post.createdAt || Date.now()),
+        ownerId: String(post.ownerId || ""),
+        parentId: post.parentId || null,
+        heat: Number(post.heat || post.createdAt || Date.now()),
+        videoPlaybackUrl: ""
+      };
+    }
 
     function loadPosts(){
-      const raw = localStorage.getItem(STORE_KEY);
+      const raw = localStorage.getItem(STORE_KEY) || localStorage.getItem(LEGACY_STORE_KEY);
       if (!raw) return [];
       try {
         const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
+        return Array.isArray(parsed) ? parsed.map(normalizePost) : [];
       } catch {
         return [];
       }
     }
 
     function savePosts(list){
-      localStorage.setItem(STORE_KEY, JSON.stringify(list));
+      const cleaned = list.map(p => {
+        const out = { ...p };
+        delete out.videoPlaybackUrl;
+        return out;
+      });
+      localStorage.setItem(STORE_KEY, JSON.stringify(cleaned));
+    }
+
+    function openMediaDb(){
+      if (mediaDbPromise) return mediaDbPromise;
+      mediaDbPromise = new Promise((resolve, reject) => {
+        const req = indexedDB.open(MEDIA_DB_NAME, 1);
+        req.onupgradeneeded = () => {
+          const db = req.result;
+          if (!db.objectStoreNames.contains(MEDIA_STORE_NAME)){
+            db.createObjectStore(MEDIA_STORE_NAME);
+          }
+        };
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error || new Error("IndexedDB open failed"));
+      });
+      return mediaDbPromise;
+    }
+
+    async function putMediaBlob(key, blob){
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(MEDIA_STORE_NAME, "readwrite");
+        tx.objectStore(MEDIA_STORE_NAME).put(blob, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error || new Error("Media save failed"));
+      });
+    }
+
+    async function getMediaBlob(key){
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(MEDIA_STORE_NAME, "readonly");
+        const req = tx.objectStore(MEDIA_STORE_NAME).get(key);
+        req.onsuccess = () => resolve(req.result || null);
+        req.onerror = () => reject(req.error || new Error("Media read failed"));
+      });
+    }
+
+    async function deleteMediaBlob(key){
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(MEDIA_STORE_NAME, "readwrite");
+        tx.objectStore(MEDIA_STORE_NAME).delete(key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error || new Error("Media delete failed"));
+      });
+    }
+
+    async function clearMediaStore(){
+      const db = await openMediaDb();
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(MEDIA_STORE_NAME, "readwrite");
+        tx.objectStore(MEDIA_STORE_NAME).clear();
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error || new Error("Media wipe failed"));
+      });
+    }
+
+    function fileToDataUrl(file){
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function getVideoDuration(fileOrBlob){
+      return new Promise((resolve, reject) => {
+        const video = document.createElement("video");
+        video.preload = "metadata";
+        video.playsInline = true;
+        video.onloadedmetadata = () => {
+          URL.revokeObjectURL(video.src);
+          resolve(video.duration || 0);
+        };
+        video.onerror = reject;
+        video.src = URL.createObjectURL(fileOrBlob);
+      });
     }
 
     const state = {
       userId: uid(),
       posts: loadPosts(),
+      profile: loadProfile(),
+      stagedBagPhotoDataUrl: "",
       sortMode: "top",
       search: "",
       filterTag: "all",
       filterType: "all",
       filterLevel: "all",
-      stagedVideoDataUrl: "",
+      stagedVideoBlob: null,
+      stagedVideoPreviewUrl: "",
       stagedVideoDuration: 0,
       cameraFacingMode: "user",
       mediaStream: null,
       mediaRecorder: null,
       mediaChunks: [],
       recordTimerInterval: null,
-      recordStartedAt: 0
+      recordStartedAt: 0,
+      booted: false
     };
+
+
+    function initials(name){
+      const parts = String(name || "?").trim().split(/\s+/).filter(Boolean);
+      return (parts.slice(0,2).map(x => x[0]).join("") || "?").toUpperCase();
+    }
+
+    function bagPalette(style){
+      const map = {
+        kraft: { base: "#9a7447", top: "#b48b58", line: "#6d4e2b" },
+        white: { base: "#e9e3d6", top: "#f7f2e9", line: "#8e877b" },
+        black: { base: "#2a2a2e", top: "#404046", line: "#7d7d86" },
+        grocery: { base: "#b99463", top: "#d0ad7b", line: "#76552f" },
+        lunch: { base: "#a47a52", top: "#c29466", line: "#674827" }
+      };
+      return map[style] || map.kraft;
+    }
+
+    function loadImage(dataUrl){
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = dataUrl;
+      });
+    }
+
+    function bagPolygon(ctx, w, h){
+      ctx.beginPath();
+      ctx.moveTo(w*0.26, h*0.16);
+      ctx.lineTo(w*0.74, h*0.16);
+      ctx.lineTo(w*0.84, h*0.88);
+      ctx.lineTo(w*0.16, h*0.88);
+      ctx.closePath();
+    }
+
+    function drawBagShell(ctx, options = {}){
+      const { w=320, h=320, bagStyle="kraft", eyeStyle="round", bagMark="plain" } = options;
+      const pal = bagPalette(bagStyle);
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle = "#101014";
+      ctx.fillRect(0,0,w,h);
+
+      ctx.save();
+      ctx.translate(w*0.5, h*0.5);
+      ctx.rotate(-0.045);
+      ctx.translate(-w*0.5, -h*0.5);
+
+      const grad = ctx.createLinearGradient(0, h*0.12, 0, h*0.9);
+      grad.addColorStop(0, pal.top);
+      grad.addColorStop(1, pal.base);
+      bagPolygon(ctx, w, h);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = pal.line;
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(w*0.27, h*0.2);
+      ctx.lineTo(w*0.73, h*0.2);
+      ctx.strokeStyle = "rgba(0,0,0,.18)";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.globalAlpha = .12;
+      for (let i=0;i<7;i++){
+        ctx.beginPath();
+        const x = w*(0.24 + i*0.08);
+        ctx.moveTo(x, h*0.22);
+        ctx.lineTo(x + ((i%2)?8:-8), h*0.84);
+        ctx.strokeStyle = i%2 ? "#fff" : "#000";
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      const eyeY = h*0.46;
+      const eyeLX = w*0.4;
+      const eyeRX = w*0.6;
+      ctx.save();
+      ctx.globalCompositeOperation = "destination-out";
+      if (eyeStyle === "wide") {
+        ctx.beginPath(); ctx.ellipse(eyeLX, eyeY, 24, 11, 0, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(eyeRX, eyeY, 24, 11, 0, 0, Math.PI*2); ctx.fill();
+      } else if (eyeStyle === "squint") {
+        ctx.beginPath(); ctx.roundRect(eyeLX-20, eyeY-5, 40, 10, 6); ctx.fill();
+        ctx.beginPath(); ctx.roundRect(eyeRX-20, eyeY-5, 40, 10, 6); ctx.fill();
+      } else if (eyeStyle === "x") {
+        const drawX = (x,y) => {
+          ctx.save();
+          ctx.translate(x,y);
+          ctx.rotate(Math.PI/4);
+          ctx.fillRect(-4,-16,8,32);
+          ctx.rotate(Math.PI/2);
+          ctx.fillRect(-4,-16,8,32);
+          ctx.restore();
+        };
+        drawX(eyeLX, eyeY);
+        drawX(eyeRX, eyeY);
+      } else {
+        ctx.beginPath(); ctx.arc(eyeLX, eyeY, 13, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(eyeRX, eyeY, 13, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+
+      ctx.strokeStyle = pal.line;
+      ctx.lineWidth = 3;
+      if (bagMark === "scribble") {
+        ctx.beginPath();
+        ctx.moveTo(w*0.36,h*0.62);
+        ctx.lineTo(w*0.47,h*0.58);
+        ctx.lineTo(w*0.43,h*0.67);
+        ctx.lineTo(w*0.57,h*0.62);
+        ctx.lineTo(w*0.52,h*0.73);
+        ctx.stroke();
+      } else if (bagMark === "tape") {
+        ctx.fillStyle = "rgba(215,181,109,.78)";
+        ctx.fillRect(w*0.45, h*0.26, w*0.12, h*0.08);
+        ctx.strokeRect(w*0.45, h*0.26, w*0.12, h*0.08);
+      } else if (bagMark === "stitch") {
+        ctx.beginPath();
+        ctx.moveTo(w*0.36, h*0.65);
+        ctx.lineTo(w*0.64, h*0.65);
+        ctx.stroke();
+        for (let i=0;i<8;i++){
+          const x = w*(0.37 + i*0.035);
+          ctx.beginPath();
+          ctx.moveTo(x, h*0.62);
+          ctx.lineTo(x+6, h*0.68);
+          ctx.stroke();
+        }
+      }
+
+      ctx.restore();
+    }
+
+    async function buildBagAvatar(photoDataUrl = "", options = {}){
+      const size = 320;
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext("2d");
+
+      if (photoDataUrl){
+        try {
+          const img = await loadImage(photoDataUrl);
+          ctx.fillStyle = "#0f0f12";
+          ctx.fillRect(0,0,size,size);
+          ctx.save();
+          ctx.filter = "grayscale(1) contrast(1.1) brightness(.75) blur(2px)";
+          const scale = Math.max(size / img.width, size / img.height);
+          const dw = img.width * scale;
+          const dh = img.height * scale;
+          const dx = (size - dw) / 2;
+          const dy = (size - dh) / 2;
+          ctx.drawImage(img, dx, dy, dw, dh);
+          ctx.restore();
+        } catch {}
+      }
+
+      ctx.save();
+      bagPolygon(ctx, size, size);
+      ctx.clip();
+      if (photoDataUrl){
+        ctx.fillStyle = "rgba(0,0,0,.20)";
+        ctx.fillRect(0,0,size,size);
+      } else {
+        ctx.fillStyle = "rgba(255,255,255,.03)";
+        ctx.fillRect(0,0,size,size);
+      }
+      ctx.restore();
+
+      drawBagShell(ctx, { w:size, h:size, ...options });
+      return canvas.toDataURL("image/png");
+    }
+
+    function profileHandleOrFallback(){
+      return String(state.profile.handle || "").trim() || "BAGFACE";
+    }
+
+    function currentAvatarUrl(){
+      return state.profile.avatarDataUrl || "";
+    }
+
+    function avatarImgMarkup(url, name){
+      if (url){
+        return `<div class="avatarStamp"><img src="${url}" alt="${escapeHTML(name || "avatar")}" /></div>`;
+      }
+      return `<div class="avatarStamp"><div class="avatarFallback">${escapeHTML(initials(name))}</div></div>`;
+    }
+
+    function syncAuthorFromProfile(){
+      const author = $("#author");
+      if (!author.value.trim()) author.value = profileHandleOrFallback();
+    }
+
+    function updateBagPreview(){
+      const box = $("#bagPreview");
+      const url = currentAvatarUrl();
+      box.innerHTML = url ? `<img src="${url}" alt="Your bag avatar" />` : `<div class="avatarFallback">NO BAG</div>`;
+      $("#bagMeta").textContent = `${profileHandleOrFallback()} · ${String(state.profile.bagStyle || "kraft").toUpperCase()} · ${String(state.profile.eyeStyle || "round").toUpperCase()}${state.profile.photoDataUrl ? " · PHOTO-FED" : " · PLAIN"}`;
+    }
+
+    function hydrateProfileUi(){
+      $("#profileHandle").value = state.profile.handle || "";
+      $("#bagStyle").value = state.profile.bagStyle || "kraft";
+      $("#eyeStyle").value = state.profile.eyeStyle || "round";
+      $("#bagMark").value = state.profile.bagMark || "plain";
+      updateBagPreview();
+      syncAuthorFromProfile();
+    }
+
+    async function saveProfileAndRender(toastMsg = "Bag saved."){
+      saveProfile(state.profile);
+      hydrateProfileUi();
+      render();
+      if (toastMsg) toast(toastMsg);
+    }
 
     const score = (p) => (p.laughs || 0) - (p.mehs || 0);
 
@@ -1064,191 +1588,6 @@
       $("#dailyPremiseText").textContent = pickRandom(dailyPremiseBank);
     }
 
-    function fileToDataUrl(file){
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    function getVideoDuration(file){
-      return new Promise((resolve, reject) => {
-        const video = document.createElement("video");
-        video.preload = "metadata";
-        video.onloadedmetadata = () => {
-          URL.revokeObjectURL(video.src);
-          resolve(video.duration || 0);
-        };
-        video.onerror = reject;
-        video.src = URL.createObjectURL(file);
-      });
-    }
-
-    function updateVideoButtons(){
-      const hasStream = !!state.mediaStream;
-      const isRecording = !!state.mediaRecorder && state.mediaRecorder.state === "recording";
-      const hasClip = !!state.stagedVideoDataUrl;
-
-      $("#flipCameraBtn").disabled = !hasStream || isRecording;
-      $("#recordBtn").disabled = !hasStream || isRecording;
-      $("#stopRecordBtn").disabled = !isRecording;
-      $("#clearVideoBtn").disabled = !hasStream && !hasClip;
-    }
-
-    function stopCameraStream(){
-      if (state.mediaStream){
-        state.mediaStream.getTracks().forEach(track => track.stop());
-        state.mediaStream = null;
-      }
-      const cam = $("#cameraPreview");
-      cam.pause();
-      cam.style.display = "none";
-      cam.srcObject = null;
-      updateVideoButtons();
-    }
-
-    function stopRecordTimer(){
-      if (state.recordTimerInterval){
-        clearInterval(state.recordTimerInterval);
-        state.recordTimerInterval = null;
-      }
-      $("#recordTimer").style.display = "none";
-      $("#recordTimerText").textContent = "00:00";
-    }
-
-    function formatClock(seconds){
-      const s = Math.max(0, Math.floor(seconds));
-      const mm = String(Math.floor(s / 60)).padStart(2, "0");
-      const ss = String(s % 60).padStart(2, "0");
-      return `${mm}:${ss}`;
-    }
-
-    function startRecordTimer(){
-      state.recordStartedAt = Date.now();
-      $("#recordTimer").style.display = "inline-flex";
-      $("#recordTimerText").textContent = "00:00";
-      stopRecordTimer();
-      $("#recordTimer").style.display = "inline-flex";
-      state.recordTimerInterval = setInterval(() => {
-        const secs = (Date.now() - state.recordStartedAt) / 1000;
-        $("#recordTimerText").textContent = formatClock(secs);
-        if (secs >= 30){
-          stopActiveRecording(true);
-        }
-      }, 200);
-    }
-
-    async function openCamera(facingMode = state.cameraFacingMode){
-      if (!navigator.mediaDevices?.getUserMedia){
-        toast("Camera API is not available in this browser.");
-        return;
-      }
-
-      try {
-        stopCameraStream();
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-          },
-          video: {
-            facingMode: { ideal: facingMode },
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-            frameRate: { ideal: 30, max: 30 }
-          }
-        });
-
-        state.cameraFacingMode = facingMode;
-        state.mediaStream = stream;
-        const cam = $("#cameraPreview");
-        const preview = $("#videoPreview");
-        preview.pause();
-        preview.style.display = state.stagedVideoDataUrl ? "block" : "none";
-        cam.srcObject = stream;
-        cam.style.display = "block";
-        $("#videoStatus").textContent = "Camera live. Record up to :30.";
-        updateVideoButtons();
-      } catch (err){
-        console.error(err);
-        $("#videoStatus").textContent = "Camera access failed.";
-        toast("Camera or mic permission was blocked.");
-        updateVideoButtons();
-      }
-    }
-
-    function getRecorderMimeType(){
-      const options = [
-        "video/webm;codecs=vp9,opus",
-        "video/webm;codecs=vp8,opus",
-        "video/webm",
-        "video/mp4"
-      ];
-      if (!window.MediaRecorder) return "";
-      for (const type of options){
-        if (MediaRecorder.isTypeSupported?.(type)) return type;
-      }
-      return "";
-    }
-
-    async function stopActiveRecording(autoStop = false){
-      if (!state.mediaRecorder || state.mediaRecorder.state !== "recording") return;
-      return new Promise((resolve) => {
-        const recorder = state.mediaRecorder;
-        const done = async () => {
-          recorder.removeEventListener("stop", done);
-          stopRecordTimer();
-          const mimeType = recorder.mimeType || "video/webm";
-          const blob = new Blob(state.mediaChunks, { type: mimeType });
-          state.mediaChunks = [];
-          state.mediaRecorder = null;
-
-          if (!blob.size){
-            $("#videoStatus").textContent = "Recording failed.";
-            updateVideoButtons();
-            resolve();
-            return;
-          }
-
-          const duration = await getVideoDuration(blob).catch(() => 0);
-          if (duration > 30.5){
-            $("#videoStatus").textContent = `Too long: ${duration.toFixed(1)}s. Keep it to :30.`;
-            toast("Recording exceeded :30.");
-            updateVideoButtons();
-            resolve();
-            return;
-          }
-
-          const dataUrl = await fileToDataUrl(blob).catch(() => "");
-          if (!dataUrl){
-            $("#videoStatus").textContent = "Could not save recording.";
-            updateVideoButtons();
-            resolve();
-            return;
-          }
-
-          state.stagedVideoDataUrl = dataUrl;
-          state.stagedVideoDuration = duration || Math.min(30, (Date.now() - state.recordStartedAt) / 1000);
-
-          const preview = $("#videoPreview");
-          preview.srcObject = null;
-          preview.src = dataUrl;
-          preview.style.display = "block";
-          $("#videoStatus").textContent = autoStop
-            ? `Recorded ${state.stagedVideoDuration.toFixed(1)}s. Auto-stopped at :30.`
-            : `Recorded ${state.stagedVideoDuration.toFixed(1)}s. Ready to post.`;
-          updateVideoButtons();
-          resolve();
-        };
-
-        recorder.addEventListener("stop", done);
-        recorder.stop();
-      });
-    }
-
     function typeLabel(type){
       if (type === "standup") return "MINI STANDUP";
       if (type === "caption") return "CAPTION THIS";
@@ -1285,6 +1624,96 @@
 
     function getMine(level = "all"){
       return state.posts.filter(p => p.ownerId === state.userId && (level === "all" || p.level === level));
+    }
+
+    function revokePostPlaybackUrls(){
+      for (const p of state.posts){
+        if (p.videoPlaybackUrl && String(p.videoPlaybackUrl).startsWith("blob:")){
+          URL.revokeObjectURL(p.videoPlaybackUrl);
+        }
+        p.videoPlaybackUrl = "";
+      }
+    }
+
+    function revokeStagedVideoPreview(){
+      if (state.stagedVideoPreviewUrl && String(state.stagedVideoPreviewUrl).startsWith("blob:")){
+        URL.revokeObjectURL(state.stagedVideoPreviewUrl);
+      }
+      state.stagedVideoPreviewUrl = "";
+    }
+
+    function clearStagedVideo(options = {}){
+      const { preserveStatus = false } = options;
+      revokeStagedVideoPreview();
+      state.stagedVideoBlob = null;
+      state.stagedVideoDuration = 0;
+      $("#videoUpload").value = "";
+      const preview = $("#videoPreview");
+      preview.pause();
+      preview.style.display = "none";
+      preview.removeAttribute("src");
+      preview.srcObject = null;
+      if (!preserveStatus){
+        $("#videoStatus").textContent = state.mediaStream ? "Camera live. Record up to :30." : "No clip loaded.";
+      }
+      updateVideoButtons();
+    }
+
+    async function setStagedVideoFromBlob(blob, duration, statusText){
+      revokeStagedVideoPreview();
+      state.stagedVideoBlob = blob;
+      state.stagedVideoDuration = duration || 0;
+      state.stagedVideoPreviewUrl = URL.createObjectURL(blob);
+
+      const preview = $("#videoPreview");
+      preview.pause();
+      preview.srcObject = null;
+      preview.src = state.stagedVideoPreviewUrl;
+      preview.style.display = "block";
+      $("#videoStatus").textContent = statusText;
+      updateVideoButtons();
+    }
+
+    async function hydrateMediaPlaybackUrls(){
+      revokePostPlaybackUrls();
+      const jobs = state.posts.map(async (p) => {
+        if (p.videoDataUrl){
+          p.videoPlaybackUrl = p.videoDataUrl;
+          return;
+        }
+        if (!p.videoRef) return;
+        try {
+          const blob = await getMediaBlob(p.videoRef);
+          if (blob){
+            p.videoPlaybackUrl = URL.createObjectURL(blob);
+          }
+        } catch (err){
+          console.error(err);
+        }
+      });
+      await Promise.all(jobs);
+    }
+
+    async function migrateLegacyInlineVideos(){
+      const legacy = state.posts.filter(p => p.videoDataUrl && !p.videoRef);
+      if (!legacy.length) return;
+      let moved = 0;
+      for (const p of legacy){
+        try {
+          const res = await fetch(p.videoDataUrl);
+          const blob = await res.blob();
+          const ref = `clip_${p.id}`;
+          await putMediaBlob(ref, blob);
+          p.videoRef = ref;
+          p.videoDataUrl = "";
+          moved += 1;
+        } catch (err){
+          console.error("Legacy media migration failed", err);
+        }
+      }
+      if (moved){
+        savePosts(state.posts);
+      }
     }
 
     function updateCounts(){
@@ -1413,6 +1842,7 @@
         const safeText = escapeHTML(p.text || "");
         const safeAuthor = escapeHTML(p.author || "Anonymous");
         const safeCredit = escapeHTML(p.credit || "");
+        const safeAvatarUrl = String(p.avatarUrl || "");
         const safeTag = escapeHTML(p.tag || "other");
         const safeTopic = escapeHTML(p.topic || "");
         const safeSetName = escapeHTML(p.setName || "");
@@ -1420,18 +1850,21 @@
         const isMine = p.ownerId === state.userId;
         const hot = (Date.now() - (p.heat || 0)) < 300000;
         const parent = findPostById(p.parentId);
+        const videoSrc = p.videoPlaybackUrl || p.videoDataUrl || "";
 
         const riffs = (p.riffs || []).map(r =>
-          `<div class="riffItem"><em>${escapeHTML(r.author || "Anonymous")}:</em> ${escapeHTML(r.text || "")}</div>`
+          `<div class="riffItem"><div class="avatarRow">${avatarImgMarkup(String(r.avatarUrl || ""), r.author || "Anonymous")}<div><em>${escapeHTML(r.author || "Anonymous")}:</em> ${escapeHTML(r.text || "")}</div></div></div>`
         ).join("");
 
         return `
           <article class="post" id="post-${p.id}" data-post="${p.id}">
             <div class="postTop">
-              <div style="flex:1; min-width:240px;">
+              <div class="postHeaderMain" style="flex:1; min-width:240px;">
+                ${avatarImgMarkup(safeAvatarUrl, p.author || "Anonymous")}
+                <div style="flex:1; min-width:0;">
                 ${safeTopic ? `<div style="font-weight:800; margin-bottom:6px;">${safeTopic}</div>` : ""}
                 ${p.text ? `<p class="postText">${safeText}</p>` : ""}
-                ${p.videoDataUrl ? `<video controls src="${p.videoDataUrl}"></video>` : ""}
+                ${videoSrc ? `<video controls playsinline src="${videoSrc}"></video>` : ""}
                 <div class="meta">
                   <span>— ${safeAuthor}</span>
                   ${hot ? `<span class="badge hot">🔥 HOT</span>` : ""}
@@ -1447,6 +1880,7 @@
                   ${isMine ? `<span class="badge">Mine</span>` : ""}
                 </div>
                 ${parent ? `<div class="meta" style="margin-top:8px;"><span class="badge">Forked from: ${escapeHTML(parent.author || "Anonymous")}</span></div>` : ""}
+                </div>
               </div>
 
               <div class="actions">
@@ -1464,7 +1898,7 @@
               <summary>Riffs (${(p.riffs || []).length})</summary>
               <div class="riffList">${riffs || `<div class="small">No riffs yet. Add one.</div>`}</div>
               <div class="row" style="margin-top:10px;">
-                <input placeholder="Your avatar" data-riff-author="${p.id}" />
+                <div class="riffAuthorInputWrap">${avatarImgMarkup(currentAvatarUrl(), profileHandleOrFallback())}<input placeholder="Your handle" value="${escapeHTML(profileHandleOrFallback())}" data-riff-author="${p.id}" /></div>
                 <input placeholder="Add a riff…" data-riff-text="${p.id}" />
               </div>
               <div style="margin-top:10px;">
@@ -1476,8 +1910,9 @@
       }).join("");
     }
 
-    function persistAndRender(msg){
+    async function persistAndRender(msg){
       savePosts(state.posts);
+      await hydrateMediaPlaybackUrls();
       render();
       if (msg) toast(msg);
     }
@@ -1490,9 +1925,151 @@
       render();
     }
 
-    function setLevelFilter(level){
-      state.filterLevel = level;
-      render();
+    function updateVideoButtons(){
+      const hasStream = !!state.mediaStream;
+      const isRecording = !!state.mediaRecorder && state.mediaRecorder.state === "recording";
+      const hasClip = !!state.stagedVideoBlob || !!state.stagedVideoPreviewUrl;
+
+      $("#flipCameraBtn").disabled = !hasStream || isRecording;
+      $("#recordBtn").disabled = !hasStream || isRecording;
+      $("#stopRecordBtn").disabled = !isRecording;
+      $("#clearVideoBtn").disabled = !hasStream && !hasClip;
+    }
+
+    function stopCameraStream(){
+      if (state.mediaStream){
+        state.mediaStream.getTracks().forEach(track => track.stop());
+        state.mediaStream = null;
+      }
+      const cam = $("#cameraPreview");
+      cam.pause();
+      cam.style.display = "none";
+      cam.srcObject = null;
+      updateVideoButtons();
+    }
+
+    function stopRecordTimer(){
+      if (state.recordTimerInterval){
+        clearInterval(state.recordTimerInterval);
+        state.recordTimerInterval = null;
+      }
+      $("#recordTimer").style.display = "none";
+      $("#recordTimerText").textContent = "00:00";
+    }
+
+    function formatClock(seconds){
+      const s = Math.max(0, Math.floor(seconds));
+      const mm = String(Math.floor(s / 60)).padStart(2, "0");
+      const ss = String(s % 60).padStart(2, "0");
+      return `${mm}:${ss}`;
+    }
+
+    function startRecordTimer(){
+      state.recordStartedAt = Date.now();
+      stopRecordTimer();
+      $("#recordTimer").style.display = "inline-flex";
+      $("#recordTimerText").textContent = "00:00";
+      state.recordTimerInterval = setInterval(() => {
+        const secs = (Date.now() - state.recordStartedAt) / 1000;
+        $("#recordTimerText").textContent = formatClock(secs);
+        if (secs >= 30){
+          stopActiveRecording(true);
+        }
+      }, 200);
+    }
+
+    async function openCamera(facingMode = state.cameraFacingMode){
+      if (!navigator.mediaDevices?.getUserMedia){
+        toast("Camera API is not available in this browser.");
+        return;
+      }
+
+      try {
+        stopCameraStream();
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          },
+          video: {
+            facingMode: { ideal: facingMode },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { ideal: 30, max: 30 }
+          }
+        });
+
+        state.cameraFacingMode = facingMode;
+        state.mediaStream = stream;
+        const cam = $("#cameraPreview");
+        cam.srcObject = stream;
+        cam.style.display = "block";
+        $("#videoStatus").textContent = "Camera live. Record up to :30.";
+        updateVideoButtons();
+      } catch (err){
+        console.error(err);
+        $("#videoStatus").textContent = "Camera access failed.";
+        toast("Camera or mic permission was blocked.");
+        updateVideoButtons();
+      }
+    }
+
+    function getRecorderMimeType(){
+      const options = [
+        "video/webm;codecs=vp9,opus",
+        "video/webm;codecs=vp8,opus",
+        "video/webm",
+        "video/mp4"
+      ];
+      if (!window.MediaRecorder) return "";
+      for (const type of options){
+        if (MediaRecorder.isTypeSupported?.(type)) return type;
+      }
+      return "";
+    }
+
+    async function stopActiveRecording(autoStop = false){
+      if (!state.mediaRecorder || state.mediaRecorder.state !== "recording") return;
+      return new Promise((resolve) => {
+        const recorder = state.mediaRecorder;
+        const done = async () => {
+          recorder.removeEventListener("stop", done);
+          stopRecordTimer();
+          const mimeType = recorder.mimeType || "video/webm";
+          const blob = new Blob(state.mediaChunks, { type: mimeType });
+          state.mediaChunks = [];
+          state.mediaRecorder = null;
+
+          if (!blob.size){
+            $("#videoStatus").textContent = "Recording failed.";
+            updateVideoButtons();
+            resolve();
+            return;
+          }
+
+          const duration = await getVideoDuration(blob).catch(() => 0);
+          if (duration > 30.5){
+            $("#videoStatus").textContent = `Too long: ${duration.toFixed(1)}s. Keep it to :30.`;
+            toast("Recording exceeded :30.");
+            updateVideoButtons();
+            resolve();
+            return;
+          }
+
+          await setStagedVideoFromBlob(
+            blob,
+            duration || Math.min(30, (Date.now() - state.recordStartedAt) / 1000),
+            autoStop
+              ? `Recorded ${(duration || Math.min(30, (Date.now() - state.recordStartedAt) / 1000)).toFixed(1)}s. Auto-stopped at :30.`
+              : `Recorded ${(duration || Math.min(30, (Date.now() - state.recordStartedAt) / 1000)).toFixed(1)}s. Ready to post.`
+          );
+          resolve();
+        };
+
+        recorder.addEventListener("stop", done);
+        recorder.stop();
+      });
     }
 
     $("#modeTop").addEventListener("click", () => setMode("top"));
@@ -1572,49 +2149,38 @@
     });
 
     $("#flipCameraBtn").addEventListener("click", async () => {
-      state.cameraFacingMode = state.cameraFacingMode === "user" ? "environment" : "user";
-      await openCamera(state.cameraFacingMode);
-      toast(state.cameraFacingMode === "user" ? "Front camera." : "Rear camera.");
+      const nextMode = state.cameraFacingMode === "user" ? "environment" : "user";
+      await openCamera(nextMode);
     });
 
     $("#recordBtn").addEventListener("click", () => {
       if (!state.mediaStream){
-        return toast("Open the camera first.");
+        toast("Open the camera first.");
+        return;
       }
       if (!window.MediaRecorder){
-        return toast("This browser cannot record video here.");
+        toast("Recording is not supported in this browser.");
+        return;
       }
-
+      const mimeType = getRecorderMimeType();
       try {
-        const mimeType = getRecorderMimeType();
         state.mediaChunks = [];
-        state.stagedVideoDataUrl = "";
-        state.stagedVideoDuration = 0;
-        $("#videoPreview").pause();
-        $("#videoPreview").style.display = "none";
-        $("#videoPreview").removeAttribute("src");
-        $("#videoStatus").textContent = "Recording...";
         const recorder = mimeType
           ? new MediaRecorder(state.mediaStream, { mimeType })
           : new MediaRecorder(state.mediaStream);
-
         state.mediaRecorder = recorder;
-        recorder.ondataavailable = (event) => {
-          if (event.data && event.data.size) state.mediaChunks.push(event.data);
-        };
-        recorder.onerror = () => {
-          stopRecordTimer();
-          $("#videoStatus").textContent = "Recording failed.";
-          toast("Recording failed.");
-          state.mediaRecorder = null;
-          updateVideoButtons();
-        };
+        recorder.addEventListener("dataavailable", (evt) => {
+          if (evt.data && evt.data.size) state.mediaChunks.push(evt.data);
+        });
         recorder.start(250);
+        $("#videoStatus").textContent = "Recording live…";
+        clearStagedVideo({ preserveStatus: true });
         startRecordTimer();
         updateVideoButtons();
       } catch (err){
         console.error(err);
         toast("Could not start recording.");
+        updateVideoButtons();
       }
     });
 
@@ -1622,29 +2188,21 @@
       await stopActiveRecording(false);
     });
 
-    $("#clearVideoBtn").addEventListener("click", () => {
-      state.stagedVideoDataUrl = "";
-      state.stagedVideoDuration = 0;
-      $("#videoUpload").value = "";
-      $("#videoPreview").pause();
-      $("#videoPreview").style.display = "none";
-      $("#videoPreview").removeAttribute("src");
-      $("#videoStatus").textContent = state.mediaStream ? "Camera live. Record up to :30." : "No clip loaded.";
-      stopRecordTimer();
+    $("#clearVideoBtn").addEventListener("click", async () => {
+      if (state.mediaRecorder && state.mediaRecorder.state === "recording"){
+        await stopActiveRecording(false);
+      }
+      clearStagedVideo();
+      stopCameraStream();
+      $("#videoStatus").textContent = "No clip loaded.";
       updateVideoButtons();
-      toast("Clip cleared.");
     });
 
     $("#videoUpload").addEventListener("change", async (e) => {
       const file = e.target.files?.[0];
       const status = $("#videoStatus");
-      const preview = $("#videoPreview");
 
-      state.stagedVideoDataUrl = "";
-      state.stagedVideoDuration = 0;
-      preview.pause();
-      preview.style.display = "none";
-      preview.removeAttribute("src");
+      clearStagedVideo({ preserveStatus: true });
 
       if (!file){
         status.textContent = state.mediaStream ? "Camera live. Record up to :30." : "No clip loaded.";
@@ -1662,24 +2220,17 @@
           return;
         }
 
-        const dataUrl = await fileToDataUrl(file);
-        state.stagedVideoDataUrl = dataUrl;
-        state.stagedVideoDuration = duration;
-
-        preview.srcObject = null;
-        preview.src = dataUrl;
-        preview.style.display = "block";
-        status.textContent = `Loaded: ${duration.toFixed(1)}s. Ready to post.`;
-        updateVideoButtons();
-      } catch {
+        await setStagedVideoFromBlob(file, duration, `Loaded: ${duration.toFixed(1)}s. Ready to post.`);
+      } catch (err){
+        console.error(err);
         status.textContent = "Could not load that clip.";
         toast("Video load failed.");
         updateVideoButtons();
       }
     });
 
-    $("#postBtn").addEventListener("click", () => {
-      const author = ($("#author").value || "").trim() || "Anonymous";
+    $("#postBtn").addEventListener("click", async () => {
+      const author = ($("#author").value || "").trim() || profileHandleOrFallback();
       const text = ($("#jokeText").value || "").trim();
       const tag = $("#tag").value;
       const credit = ($("#credit").value || "").trim();
@@ -1691,8 +2242,8 @@
       const sequenceRaw = ($("#sequence").value || "").trim();
       const sequence = sequenceRaw ? Number(sequenceRaw) : null;
 
-      if (type === "standup" && !state.stagedVideoDataUrl){
-        return toast("Upload a mini standup clip first.");
+      if (type === "standup" && !state.stagedVideoBlob){
+        return toast("Load or record a mini standup clip first.");
       }
 
       if (type !== "standup" && !text){
@@ -1700,7 +2251,18 @@
       }
 
       const now = Date.now();
-      const post = {
+      const videoRef = type === "standup" ? `clip_${now}_${Math.random().toString(36).slice(2,8)}` : "";
+      if (type === "standup" && state.stagedVideoBlob){
+        try {
+          await putMediaBlob(videoRef, state.stagedVideoBlob);
+        } catch (err){
+          console.error(err);
+          toast("Could not save that clip locally.");
+          return;
+        }
+      }
+
+      const post = normalizePost({
         id: now + Math.floor(Math.random() * 1000),
         type,
         level,
@@ -1709,10 +2271,11 @@
         sequence,
         text,
         author,
+        avatarUrl: currentAvatarUrl(),
         tag,
         credit,
         brow,
-        videoDataUrl: type === "standup" ? state.stagedVideoDataUrl : "",
+        videoRef,
         videoDuration: type === "standup" ? state.stagedVideoDuration : 0,
         laughs: 0,
         mehs: 0,
@@ -1722,7 +2285,7 @@
         ownerId: state.userId,
         parentId: null,
         heat: now
-      };
+      });
 
       state.posts.unshift(post);
 
@@ -1730,20 +2293,14 @@
       $("#topic").value = "";
       $("#setName").value = "";
       $("#sequence").value = "";
-      $("#videoUpload").value = "";
-      $("#videoPreview").pause();
-      $("#videoPreview").style.display = "none";
-      $("#videoPreview").removeAttribute("src");
-      $("#videoStatus").textContent = state.mediaStream ? "Camera live. Record up to :30." : "No clip loaded.";
-      state.stagedVideoDataUrl = "";
-      state.stagedVideoDuration = 0;
-      stopRecordTimer();
-      updateVideoButtons();
+      clearStagedVideo({ preserveStatus: true });
+      stopCameraStream();
+      $("#videoStatus").textContent = "No clip loaded.";
 
-      persistAndRender("Posted.");
+      await persistAndRender("Posted.");
     });
 
-    $("#seedBtn").addEventListener("click", () => {
+    $("#seedBtn").addEventListener("click", async () => {
       const now = Date.now();
       const samples = [
         {
@@ -1758,7 +2315,6 @@
           tag: "one-liner",
           credit: "",
           brow: "uni",
-          videoDataUrl: "",
           videoDuration: 0,
           laughs: 3,
           mehs: 0,
@@ -1781,7 +2337,6 @@
           tag: "other",
           credit: "",
           brow: "high",
-          videoDataUrl: "",
           videoDuration: 0,
           laughs: 2,
           mehs: 0,
@@ -1804,7 +2359,6 @@
           tag: "premise",
           credit: "",
           brow: "low",
-          videoDataUrl: "",
           videoDuration: 0,
           laughs: 4,
           mehs: 1,
@@ -1815,10 +2369,10 @@
           parentId: null,
           heat: now + 3
         }
-      ];
+      ].map(normalizePost);
 
       state.posts = [...samples, ...state.posts];
-      persistAndRender("Seeded.");
+      await persistAndRender("Seeded.");
     });
 
     jokeFeed.addEventListener("click", async (e) => {
@@ -1851,13 +2405,17 @@
 
       if (act === "fork") {
         const now = Date.now();
-        const fork = {
+        const fork = normalizePost({
           ...p,
           id: now + Math.floor(Math.random() * 1000),
           text: p.text,
           topic: p.topic,
-          author: ($("#author").value || "").trim() || "Anonymous",
+          author: ($("#author").value || "").trim() || profileHandleOrFallback(),
+          avatarUrl: currentAvatarUrl(),
           credit: p.credit || "",
+          videoDataUrl: "",
+          videoRef: "",
+          videoDuration: 0,
           laughs: 0,
           mehs: 0,
           tips: 0,
@@ -1866,7 +2424,7 @@
           ownerId: state.userId,
           parentId: p.id,
           heat: now
-        };
+        });
         state.posts.unshift(fork);
         addHeat(p);
         return persistAndRender("Forked joke.");
@@ -1874,6 +2432,9 @@
 
       if (act === "del") {
         if (p.ownerId !== state.userId) return toast("Only your own posts can be deleted here.");
+        if (p.videoRef){
+          try { await deleteMediaBlob(p.videoRef); } catch (err) { console.error(err); }
+        }
         state.posts = state.posts.filter(x => x.id !== id);
         return persistAndRender("Deleted.");
       }
@@ -1881,10 +2442,10 @@
       if (act === "addriff") {
         const a = document.querySelector(`input[data-riff-author="${id}"]`);
         const t = document.querySelector(`input[data-riff-text="${id}"]`);
-        const author = (a?.value || "").trim() || "Anonymous";
+        const author = (a?.value || "").trim() || profileHandleOrFallback();
         const text = (t?.value || "").trim();
         if (!text) return toast("Add a riff first.");
-        p.riffs.push({ author, text, at: Date.now() });
+        p.riffs.push({ author, avatarUrl: currentAvatarUrl(), text, at: Date.now() });
         addHeat(p);
         t.value = "";
         return persistAndRender("Riff added.");
@@ -1906,21 +2467,36 @@
       }
 
       if (act === "share") {
-        const pack = btoa(unescape(encodeURIComponent(JSON.stringify({
-          one: {
-            type: p.type,
-            level: p.level,
-            topic: p.topic,
-            setName: p.setName,
-            sequence: p.sequence,
-            text: p.text,
-            author: p.author,
-            tag: p.tag,
-            credit: p.credit,
-            brow: p.brow,
-            parentId: p.parentId || null
+        const exportOne = {
+          type: p.type,
+          level: p.level,
+          topic: p.topic,
+          setName: p.setName,
+          sequence: p.sequence,
+          text: p.text,
+          author: p.author,
+          tag: p.tag,
+          credit: p.credit,
+          brow: p.brow,
+          parentId: p.parentId || null,
+          videoDuration: p.videoDuration || 0,
+          videoDataUrl: ""
+        };
+
+        if (p.videoPlaybackUrl || p.videoDataUrl){
+          try {
+            if (p.videoDataUrl){
+              exportOne.videoDataUrl = p.videoDataUrl;
+            } else if (p.videoRef){
+              const blob = await getMediaBlob(p.videoRef);
+              if (blob) exportOne.videoDataUrl = await fileToDataUrl(blob);
+            }
+          } catch (err){
+            console.error(err);
           }
-        }))));
+        }
+
+        const pack = btoa(unescape(encodeURIComponent(JSON.stringify({ one: exportOne }))));
         const url = `${location.origin}${location.pathname}#one=${pack}`;
         try {
           await navigator.clipboard.writeText(url);
@@ -1931,8 +2507,22 @@
       }
     });
 
-    $("#exportBtn").addEventListener("click", () => {
-      const blob = new Blob([JSON.stringify(state.posts, null, 2)], { type: "application/json" });
+    $("#exportBtn").addEventListener("click", async () => {
+      const out = [];
+      for (const p of state.posts){
+        const row = { ...p };
+        delete row.videoPlaybackUrl;
+        if (row.videoRef && !row.videoDataUrl){
+          try {
+            const blob = await getMediaBlob(row.videoRef);
+            if (blob) row.videoDataUrl = await fileToDataUrl(blob);
+          } catch (err){
+            console.error(err);
+          }
+        }
+        out.push(row);
+      }
+      const blob = new Blob([JSON.stringify(out, null, 2)], { type: "application/json" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
       a.download = "carltons-loadies-export.json";
@@ -1950,26 +2540,64 @@
         const text = await file.text();
         const parsed = JSON.parse(text);
         if (!Array.isArray(parsed)) return toast("Invalid JSON format.");
-        state.posts = parsed;
-        persistAndRender("Imported.");
-      } catch {
+
+        const imported = [];
+        for (const raw of parsed){
+          const post = normalizePost(raw);
+          if (post.videoDataUrl && !post.videoRef){
+            try {
+              const res = await fetch(post.videoDataUrl);
+              const blob = await res.blob();
+              const ref = `clip_${post.id}_${Math.random().toString(36).slice(2,8)}`;
+              await putMediaBlob(ref, blob);
+              post.videoRef = ref;
+              post.videoDataUrl = "";
+            } catch (err){
+              console.error(err);
+            }
+          }
+          imported.push(post);
+        }
+
+        state.posts = imported;
+        await persistAndRender("Imported.");
+      } catch (err){
+        console.error(err);
         toast("Import failed.");
       } finally {
         e.target.value = "";
       }
     });
 
-    $("#wipeBtn").addEventListener("click", () => {
+    $("#wipeBtn").addEventListener("click", async () => {
       const ok = confirm("This deletes the local market from THIS browser only. Continue?");
       if (!ok) return;
       state.posts = [];
       savePosts([]);
+      try { await clearMediaStore(); } catch (err) { console.error(err); }
+      revokePostPlaybackUrls();
+      clearStagedVideo({ preserveStatus: true });
       toast("Wiped local market.");
       render();
     });
 
     $("#shareAllBtn").addEventListener("click", async () => {
-      const pack = btoa(unescape(encodeURIComponent(JSON.stringify({ all: state.posts }))));
+      const out = [];
+      for (const p of state.posts){
+        const row = { ...p };
+        delete row.videoPlaybackUrl;
+        if (row.videoRef && !row.videoDataUrl){
+          try {
+            const blob = await getMediaBlob(row.videoRef);
+            if (blob) row.videoDataUrl = await fileToDataUrl(blob);
+          } catch (err){
+            console.error(err);
+          }
+        }
+        out.push(row);
+      }
+
+      const pack = btoa(unescape(encodeURIComponent(JSON.stringify({ all: out }))));
       const url = `${location.origin}${location.pathname}#all=${pack}`;
       try {
         await navigator.clipboard.writeText(url);
@@ -1979,7 +2607,7 @@
       }
     });
 
-    function tryImportFromHash(){
+    async function tryImportFromHash(){
       const h = location.hash || "";
       const m = h.match(/#(one|all)=([^&]+)/);
       if (!m) return;
@@ -1991,51 +2619,84 @@
         const decoded = JSON.parse(decodeURIComponent(escape(atob(payload))));
         if (kind === "one" && decoded?.one){
           const now = Date.now();
-          const p = decoded.one;
-          state.posts.unshift({
+          const p = normalizePost({
+            ...decoded.one,
             id: now + Math.floor(Math.random() * 1000),
-            type: p.type || "joke",
-            level: p.level || "joke",
-            topic: String(p.topic || ""),
-            setName: String(p.setName || ""),
-            sequence: p.sequence || null,
-            text: String(p.text || ""),
-            author: String(p.author || "Anonymous"),
-            tag: String(p.tag || "other"),
-            credit: String(p.credit || ""),
-            brow: String(p.brow || "uni"),
-            videoDataUrl: "",
-            videoDuration: 0,
-            laughs: 0,
-            mehs: 0,
-            tips: 0,
-            riffs: [],
-            createdAt: now,
             ownerId: "",
-            parentId: p.parentId || null,
+            createdAt: now,
             heat: now
           });
-          persistAndRender("Imported 1 post from link.");
+
+          if (p.videoDataUrl && !p.videoRef){
+            try {
+              const res = await fetch(p.videoDataUrl);
+              const blob = await res.blob();
+              const ref = `clip_${p.id}_${Math.random().toString(36).slice(2,8)}`;
+              await putMediaBlob(ref, blob);
+              p.videoRef = ref;
+              p.videoDataUrl = "";
+            } catch (err){
+              console.error(err);
+            }
+          }
+
+          state.posts.unshift(p);
+          await persistAndRender("Imported 1 post from link.");
         }
 
         if (kind === "all" && Array.isArray(decoded?.all)){
-          state.posts = decoded.all;
-          persistAndRender("Imported snapshot.");
+          const imported = [];
+          for (const raw of decoded.all){
+            const p = normalizePost(raw);
+            if (p.videoDataUrl && !p.videoRef){
+              try {
+                const res = await fetch(p.videoDataUrl);
+                const blob = await res.blob();
+                const ref = `clip_${p.id}_${Math.random().toString(36).slice(2,8)}`;
+                await putMediaBlob(ref, blob);
+                p.videoRef = ref;
+                p.videoDataUrl = "";
+              } catch (err){
+                console.error(err);
+              }
+            }
+            imported.push(p);
+          }
+          state.posts = imported;
+          await persistAndRender("Imported snapshot.");
         }
 
         history.replaceState(null, "", location.pathname + location.search);
-      } catch {}
+      } catch (err){
+        console.error(err);
+      }
+    }
+
+    async function boot(){
+      refreshPrompts();
+      try {
+        await openMediaDb();
+      } catch (err){
+        console.error(err);
+        toast("Local media storage failed to initialize.");
+      }
+      await migrateLegacyInlineVideos();
+      await tryImportFromHash();
+      await hydrateMediaPlaybackUrls();
+      render();
+      updateVideoButtons();
+      state.booted = true;
     }
 
     window.addEventListener("beforeunload", () => {
-      stopRecordTimer();
       stopCameraStream();
+      stopRecordTimer();
+      revokePostPlaybackUrls();
+      revokeStagedVideoPreview();
     });
 
-    refreshPrompts();
-    tryImportFromHash();
-    render();
-    updateVideoButtons();
+    boot();
   </script>
+
 </body>
 </html>
