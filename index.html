@@ -532,6 +532,32 @@
       max-height:420px;
     }
 
+    .camControls{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .timerPill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid rgba(255,154,60,.32);
+      color:var(--orange);
+      background:rgba(255,154,60,.08);
+      border-radius:999px;
+      padding:5px 9px;
+      font-size:.78rem;
+      font-weight:800;
+    }
+
+    .cameraHint{
+      margin-top:8px;
+      color:var(--muted);
+      font-size:.84rem;
+    }
+
     .emptyState{
       border:1px dashed rgba(255,255,255,.14);
       border-radius:14px;
@@ -734,11 +760,27 @@
               <div id="videoModule" class="module">
                 <div class="moduleTitle">
                   <span>MINI STANDUP</span>
-                  <span class="small">Upload up to :30</span>
+                  <span class="small">Camera or upload. Keep it to :30.</span>
                 </div>
-                <input id="videoUpload" type="file" accept="video/mp4,video/webm,video/quicktime" />
+
+                <video id="cameraPreview" playsinline muted autoplay style="display:none;"></video>
+                <video id="videoPreview" controls playsinline style="display:none;"></video>
+
+                <div class="camControls">
+                  <button type="button" class="btn secondary" id="openCameraBtn">Open Camera</button>
+                  <button type="button" class="btn secondary" id="flipCameraBtn" disabled>Flip Camera</button>
+                  <button type="button" class="btn secondary" id="recordBtn" disabled>Start Recording</button>
+                  <button type="button" class="btn danger" id="stopRecordBtn" disabled>Stop</button>
+                  <button type="button" class="btn secondary" id="clearVideoBtn" disabled>Clear Clip</button>
+                </div>
+
+                <div class="cameraHint">Direct camera capture works over HTTPS and asks for camera + mic permission in-browser.</div>
+                <div style="margin-top:10px;">
+                  <label for="videoUpload">Or upload a clip</label>
+                  <input id="videoUpload" type="file" accept="video/mp4,video/webm,video/quicktime" />
+                </div>
                 <div class="small" id="videoStatus" style="margin-top:8px;">No clip loaded.</div>
-                <video id="videoPreview" controls style="display:none;"></video>
+                <div class="timerPill" id="recordTimer" style="display:none; margin-top:8px;">REC <span id="recordTimerText">00:00</span> / 00:30</div>
               </div>
 
               <button class="btn" id="postBtn">Post It</button>
@@ -955,7 +997,13 @@
       filterType: "all",
       filterLevel: "all",
       stagedVideoDataUrl: "",
-      stagedVideoDuration: 0
+      stagedVideoDuration: 0,
+      cameraFacingMode: "user",
+      mediaStream: null,
+      mediaRecorder: null,
+      mediaChunks: [],
+      recordTimerInterval: null,
+      recordStartedAt: 0
     };
 
     const score = (p) => (p.laughs || 0) - (p.mehs || 0);
@@ -1035,6 +1083,169 @@
         };
         video.onerror = reject;
         video.src = URL.createObjectURL(file);
+      });
+    }
+
+    function updateVideoButtons(){
+      const hasStream = !!state.mediaStream;
+      const isRecording = !!state.mediaRecorder && state.mediaRecorder.state === "recording";
+      const hasClip = !!state.stagedVideoDataUrl;
+
+      $("#flipCameraBtn").disabled = !hasStream || isRecording;
+      $("#recordBtn").disabled = !hasStream || isRecording;
+      $("#stopRecordBtn").disabled = !isRecording;
+      $("#clearVideoBtn").disabled = !hasStream && !hasClip;
+    }
+
+    function stopCameraStream(){
+      if (state.mediaStream){
+        state.mediaStream.getTracks().forEach(track => track.stop());
+        state.mediaStream = null;
+      }
+      const cam = $("#cameraPreview");
+      cam.pause();
+      cam.style.display = "none";
+      cam.srcObject = null;
+      updateVideoButtons();
+    }
+
+    function stopRecordTimer(){
+      if (state.recordTimerInterval){
+        clearInterval(state.recordTimerInterval);
+        state.recordTimerInterval = null;
+      }
+      $("#recordTimer").style.display = "none";
+      $("#recordTimerText").textContent = "00:00";
+    }
+
+    function formatClock(seconds){
+      const s = Math.max(0, Math.floor(seconds));
+      const mm = String(Math.floor(s / 60)).padStart(2, "0");
+      const ss = String(s % 60).padStart(2, "0");
+      return `${mm}:${ss}`;
+    }
+
+    function startRecordTimer(){
+      state.recordStartedAt = Date.now();
+      $("#recordTimer").style.display = "inline-flex";
+      $("#recordTimerText").textContent = "00:00";
+      stopRecordTimer();
+      $("#recordTimer").style.display = "inline-flex";
+      state.recordTimerInterval = setInterval(() => {
+        const secs = (Date.now() - state.recordStartedAt) / 1000;
+        $("#recordTimerText").textContent = formatClock(secs);
+        if (secs >= 30){
+          stopActiveRecording(true);
+        }
+      }, 200);
+    }
+
+    async function openCamera(facingMode = state.cameraFacingMode){
+      if (!navigator.mediaDevices?.getUserMedia){
+        toast("Camera API is not available in this browser.");
+        return;
+      }
+
+      try {
+        stopCameraStream();
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          },
+          video: {
+            facingMode: { ideal: facingMode },
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { ideal: 30, max: 30 }
+          }
+        });
+
+        state.cameraFacingMode = facingMode;
+        state.mediaStream = stream;
+        const cam = $("#cameraPreview");
+        const preview = $("#videoPreview");
+        preview.pause();
+        preview.style.display = state.stagedVideoDataUrl ? "block" : "none";
+        cam.srcObject = stream;
+        cam.style.display = "block";
+        $("#videoStatus").textContent = "Camera live. Record up to :30.";
+        updateVideoButtons();
+      } catch (err){
+        console.error(err);
+        $("#videoStatus").textContent = "Camera access failed.";
+        toast("Camera or mic permission was blocked.");
+        updateVideoButtons();
+      }
+    }
+
+    function getRecorderMimeType(){
+      const options = [
+        "video/webm;codecs=vp9,opus",
+        "video/webm;codecs=vp8,opus",
+        "video/webm",
+        "video/mp4"
+      ];
+      if (!window.MediaRecorder) return "";
+      for (const type of options){
+        if (MediaRecorder.isTypeSupported?.(type)) return type;
+      }
+      return "";
+    }
+
+    async function stopActiveRecording(autoStop = false){
+      if (!state.mediaRecorder || state.mediaRecorder.state !== "recording") return;
+      return new Promise((resolve) => {
+        const recorder = state.mediaRecorder;
+        const done = async () => {
+          recorder.removeEventListener("stop", done);
+          stopRecordTimer();
+          const mimeType = recorder.mimeType || "video/webm";
+          const blob = new Blob(state.mediaChunks, { type: mimeType });
+          state.mediaChunks = [];
+          state.mediaRecorder = null;
+
+          if (!blob.size){
+            $("#videoStatus").textContent = "Recording failed.";
+            updateVideoButtons();
+            resolve();
+            return;
+          }
+
+          const duration = await getVideoDuration(blob).catch(() => 0);
+          if (duration > 30.5){
+            $("#videoStatus").textContent = `Too long: ${duration.toFixed(1)}s. Keep it to :30.`;
+            toast("Recording exceeded :30.");
+            updateVideoButtons();
+            resolve();
+            return;
+          }
+
+          const dataUrl = await fileToDataUrl(blob).catch(() => "");
+          if (!dataUrl){
+            $("#videoStatus").textContent = "Could not save recording.";
+            updateVideoButtons();
+            resolve();
+            return;
+          }
+
+          state.stagedVideoDataUrl = dataUrl;
+          state.stagedVideoDuration = duration || Math.min(30, (Date.now() - state.recordStartedAt) / 1000);
+
+          const preview = $("#videoPreview");
+          preview.srcObject = null;
+          preview.src = dataUrl;
+          preview.style.display = "block";
+          $("#videoStatus").textContent = autoStop
+            ? `Recorded ${state.stagedVideoDuration.toFixed(1)}s. Auto-stopped at :30.`
+            : `Recorded ${state.stagedVideoDuration.toFixed(1)}s. Ready to post.`;
+          updateVideoButtons();
+          resolve();
+        };
+
+        recorder.addEventListener("stop", done);
+        recorder.stop();
       });
     }
 
@@ -1356,6 +1567,74 @@
       $("#questionPromptText").textContent = pickRandom(questionBank);
     });
 
+    $("#openCameraBtn").addEventListener("click", async () => {
+      await openCamera(state.cameraFacingMode);
+    });
+
+    $("#flipCameraBtn").addEventListener("click", async () => {
+      state.cameraFacingMode = state.cameraFacingMode === "user" ? "environment" : "user";
+      await openCamera(state.cameraFacingMode);
+      toast(state.cameraFacingMode === "user" ? "Front camera." : "Rear camera.");
+    });
+
+    $("#recordBtn").addEventListener("click", () => {
+      if (!state.mediaStream){
+        return toast("Open the camera first.");
+      }
+      if (!window.MediaRecorder){
+        return toast("This browser cannot record video here.");
+      }
+
+      try {
+        const mimeType = getRecorderMimeType();
+        state.mediaChunks = [];
+        state.stagedVideoDataUrl = "";
+        state.stagedVideoDuration = 0;
+        $("#videoPreview").pause();
+        $("#videoPreview").style.display = "none";
+        $("#videoPreview").removeAttribute("src");
+        $("#videoStatus").textContent = "Recording...";
+        const recorder = mimeType
+          ? new MediaRecorder(state.mediaStream, { mimeType })
+          : new MediaRecorder(state.mediaStream);
+
+        state.mediaRecorder = recorder;
+        recorder.ondataavailable = (event) => {
+          if (event.data && event.data.size) state.mediaChunks.push(event.data);
+        };
+        recorder.onerror = () => {
+          stopRecordTimer();
+          $("#videoStatus").textContent = "Recording failed.";
+          toast("Recording failed.");
+          state.mediaRecorder = null;
+          updateVideoButtons();
+        };
+        recorder.start(250);
+        startRecordTimer();
+        updateVideoButtons();
+      } catch (err){
+        console.error(err);
+        toast("Could not start recording.");
+      }
+    });
+
+    $("#stopRecordBtn").addEventListener("click", async () => {
+      await stopActiveRecording(false);
+    });
+
+    $("#clearVideoBtn").addEventListener("click", () => {
+      state.stagedVideoDataUrl = "";
+      state.stagedVideoDuration = 0;
+      $("#videoUpload").value = "";
+      $("#videoPreview").pause();
+      $("#videoPreview").style.display = "none";
+      $("#videoPreview").removeAttribute("src");
+      $("#videoStatus").textContent = state.mediaStream ? "Camera live. Record up to :30." : "No clip loaded.";
+      stopRecordTimer();
+      updateVideoButtons();
+      toast("Clip cleared.");
+    });
+
     $("#videoUpload").addEventListener("change", async (e) => {
       const file = e.target.files?.[0];
       const status = $("#videoStatus");
@@ -1363,11 +1642,13 @@
 
       state.stagedVideoDataUrl = "";
       state.stagedVideoDuration = 0;
+      preview.pause();
       preview.style.display = "none";
       preview.removeAttribute("src");
 
       if (!file){
-        status.textContent = "No clip loaded.";
+        status.textContent = state.mediaStream ? "Camera live. Record up to :30." : "No clip loaded.";
+        updateVideoButtons();
         return;
       }
 
@@ -1377,6 +1658,7 @@
           status.textContent = `Too long: ${duration.toFixed(1)}s. Keep it to :30.`;
           toast("Video is too long.");
           e.target.value = "";
+          updateVideoButtons();
           return;
         }
 
@@ -1384,12 +1666,15 @@
         state.stagedVideoDataUrl = dataUrl;
         state.stagedVideoDuration = duration;
 
+        preview.srcObject = null;
         preview.src = dataUrl;
         preview.style.display = "block";
         status.textContent = `Loaded: ${duration.toFixed(1)}s. Ready to post.`;
+        updateVideoButtons();
       } catch {
         status.textContent = "Could not load that clip.";
         toast("Video load failed.");
+        updateVideoButtons();
       }
     });
 
@@ -1446,11 +1731,14 @@
       $("#setName").value = "";
       $("#sequence").value = "";
       $("#videoUpload").value = "";
+      $("#videoPreview").pause();
       $("#videoPreview").style.display = "none";
       $("#videoPreview").removeAttribute("src");
-      $("#videoStatus").textContent = "No clip loaded.";
+      $("#videoStatus").textContent = state.mediaStream ? "Camera live. Record up to :30." : "No clip loaded.";
       state.stagedVideoDataUrl = "";
       state.stagedVideoDuration = 0;
+      stopRecordTimer();
+      updateVideoButtons();
 
       persistAndRender("Posted.");
     });
@@ -1739,9 +2027,15 @@
       } catch {}
     }
 
+    window.addEventListener("beforeunload", () => {
+      stopRecordTimer();
+      stopCameraStream();
+    });
+
     refreshPrompts();
     tryImportFromHash();
     render();
+    updateVideoButtons();
   </script>
 </body>
 </html>
