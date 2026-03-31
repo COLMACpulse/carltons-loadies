@@ -104,7 +104,7 @@
   .sectionNavInner { display:flex; gap:10px; flex-wrap:wrap; }
   .sectionBtn {
     border:1px solid var(--line); background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.025));
-    color:var(--text); padding:12px 14px; border-radius:14px; font-weight:900; font-size:.95rem; cursor:pointer;
+    color:var(--text); padding:12px 14px; border-radius:14px; font-weight:900; font-size:.95rem; cursor:pointer; white-space:nowrap;
   }
   .sectionBtn.active {
     border-color:rgba(213,175,115,.45); box-shadow:0 0 0 1px rgba(213,175,115,.14) inset; color:#fff3df;
@@ -167,6 +167,10 @@
   .textarea { min-height:110px; resize:vertical; }
   .fieldGrid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
   .label { margin:0 0 6px; color:var(--muted); font-size:.92rem; display:block; }
+
+  .manualTuneGrid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .range { width:100%; accent-color:#d5af73; }
+
   .callout {
     border:1px dashed rgba(213,175,115,.28); background:rgba(213,175,115,.05); color:#f4e0bf; border-radius:14px; padding:14px; line-height:1.45;
   }
@@ -302,7 +306,7 @@
     .panelBd { padding:14px; }
     .panelHd h2 { font-size:1rem; }
     .panelHd p { font-size:.92rem; margin-top:4px; }
-    .cameraGrid, .comicGrid, .laneGrid, .fieldGrid, .bagifyGrid { grid-template-columns:1fr; }
+    .cameraGrid, .comicGrid, .laneGrid, .fieldGrid, .bagifyGrid, .manualTuneGrid { grid-template-columns:1fr; }
     .buttonRow { gap:8px; }
     .smallBtn { flex:1 1 calc(50% - 8px); min-height:46px; padding:10px 12px; }
     .recordBtn { font-size:1.15rem; padding:16px 16px; }
@@ -332,7 +336,7 @@
 
         <div class="heroButtons">
           <button class="heroBtn primary" data-open="standup">GO — 30 SECONDS<small>Hit record. Hard stop at :30.</small></button>
-          <button class="heroBtn" data-open="bag">WHAT’S THE BAG?</button>
+          <button class="heroBtn" data-open="bag">YOUR BAG<small>Open bag camera. Build it here.</small></button>
           <button class="heroBtn" data-open="loadup">LOAD UP</button>
           <button class="heroBtn" data-open="comic">COMIC STRIP LAB</button>
         </div>
@@ -350,9 +354,9 @@
   <div class="sectionNav">
     <div class="sectionNavInner">
       <button class="sectionBtn active" data-open="standup">MINI STAND-UP</button>
+      <button class="sectionBtn" data-open="bag">YOUR BAG</button>
       <button class="sectionBtn" data-open="loadup">LOAD UP</button>
       <button class="sectionBtn" data-open="conversations">CONVERSATIONS</button>
-      <button class="sectionBtn" data-open="bag">YOUR BAG</button>
       <button class="sectionBtn" data-open="comic">COMIC STRIP LAB</button>
     </div>
   </div>
@@ -516,6 +520,17 @@
           </div>
         </div>
 
+        <div class="manualTuneGrid" style="margin-top:14px;">
+          <div>
+            <label class="label">Bag size</label>
+            <input class="range" id="bagScaleInput" type="range" min="70" max="140" value="100" />
+          </div>
+          <div>
+            <label class="label">Bag height</label>
+            <input class="range" id="bagYOffsetInput" type="range" min="-20" max="28" value="0" />
+          </div>
+        </div>
+
         <div class="bagifyGrid" style="margin-top:18px;">
           <div class="bagifyCard">
             <h3 style="margin-top:0;">Camera Bagify</h3>
@@ -530,6 +545,8 @@
               <button class="smallBtn" id="bagifyFlipBtn" type="button">Flip</button>
               <button class="smallBtn" id="bagifyCaptureBtn" type="button">Capture Bag</button>
               <button class="smallBtn" id="bagifyStopBtn" type="button">Stop</button>
+              <button class="smallBtn" id="bagifyFileBtn" type="button">Take Photo</button>
+              <input id="bagifyFileInput" type="file" accept="image/*" capture="user" style="display:none;">
               <button class="smallBtn" id="bagifyFileBtn" type="button">Take Photo</button>
               <input id="bagifyFileInput" type="file" accept="image/*" capture="user" style="display:none;">
             </div>
@@ -1065,9 +1082,8 @@
 
 
 
-<script type="module">
-  import { FaceMesh } from "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js";
 
+<script type="module">
   const bagVideo = document.getElementById('bagVideo');
   const bagCanvas = document.getElementById('bagCanvas');
   const bagCtx = bagCanvas.getContext('2d');
@@ -1084,16 +1100,13 @@
   const bagStyleInput = document.getElementById('bagStyleInput');
   const bagEyesInput = document.getElementById('bagEyesInput');
   const bagFlavorInput = document.getElementById('bagFlavorInput');
+  const bagScaleInput = document.getElementById('bagScaleInput');
+  const bagYOffsetInput = document.getElementById('bagYOffsetInput');
 
   let bagFacing = 'user';
   let bagStream = null;
   let bagRunning = false;
-  let faceMesh = null;
-  let trackingReady = false;
-  let trackingBusy = false;
   let rafId = 0;
-  let lastLandmarks = null;
-  let lastFrameHadFace = false;
 
   function setBagStatus(msg) { bagStatus.textContent = msg; }
 
@@ -1107,17 +1120,6 @@
     bagCanvas.style.height = rect.height + 'px';
     bagCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     return true;
-  }
-
-  function mapToScreen(normX, normY) {
-    const rect = bagVideo.getBoundingClientRect();
-    return { x: (1 - normX) * rect.width, y: normY * rect.height };
-  }
-
-  function avgPoint(landmarks, indices) {
-    let x = 0, y = 0;
-    for (const i of indices) { x += landmarks[i].x; y += landmarks[i].y; }
-    return { x: x / indices.length, y: y / indices.length };
   }
 
   function drawEyeHole(x, y, rx, ry, style) {
@@ -1154,7 +1156,7 @@
     const bagStyle = bagStyleInput.value;
     const eyeStyle = bagEyesInput.value;
     const flavor = bagFlavorInput.value;
-    const { base, topTone, lineTone } = getBagColors(bagStyle);
+    const colors = getBagColors(bagStyle);
 
     bagCtx.save();
     bagCtx.translate(cx, cy);
@@ -1162,8 +1164,8 @@
     bagCtx.translate(-width / 2, -height * 0.34);
 
     const grad = bagCtx.createLinearGradient(0, 0, width, height);
-    grad.addColorStop(0, topTone);
-    grad.addColorStop(0.42, base);
+    grad.addColorStop(0, colors.topTone);
+    grad.addColorStop(0.42, colors.base);
     grad.addColorStop(1, '#a77542');
     bagCtx.fillStyle = grad;
     bagCtx.beginPath();
@@ -1176,7 +1178,7 @@
     bagCtx.closePath();
     bagCtx.fill();
 
-    bagCtx.strokeStyle = lineTone;
+    bagCtx.strokeStyle = colors.lineTone;
     bagCtx.lineWidth = Math.max(1.1, width * 0.007);
     bagCtx.beginPath();
     bagCtx.moveTo(width * 0.15, 0);
@@ -1223,8 +1225,8 @@
     }
 
     const eyeY = height * 0.46;
-    drawEyeHole(width * 0.36, eyeY, width * 0.07, height * 0.06, eyeStyle);
-    drawEyeHole(width * 0.64, eyeY, eyeStyle === 'One small' ? width * 0.095 : width * 0.07, height * 0.06, eyeStyle === 'One small' ? 'Wide' : eyeStyle);
+    drawEyeHole(width * 0.36, eyeY, width * 0.07, height * 0.06, bagEyesInput.value);
+    drawEyeHole(width * 0.64, eyeY, bagEyesInput.value === 'One small' ? width * 0.095 : width * 0.07, height * 0.06, bagEyesInput.value === 'One small' ? 'Wide' : bagEyesInput.value);
 
     if (bagStyle === 'Recycle Stamp') {
       bagCtx.fillStyle = 'rgba(28,28,28,.72)';
@@ -1235,104 +1237,36 @@
     bagCtx.restore();
   }
 
-  function clearBagCanvas() {
-    const rect = bagVideo.getBoundingClientRect();
-    bagCtx.clearRect(0, 0, rect.width || bagCanvas.width, rect.height || bagCanvas.height);
-  }
-
-  function drawFallbackBag() {
+  function drawOverlay() {
     if (!resizeBagCanvas()) return;
     const rect = bagVideo.getBoundingClientRect();
-    clearBagCanvas();
-    drawBagAt(rect.width * 0.5, rect.height * 0.52, rect.width * 0.50, rect.height * 0.62, 0);
+    bagCtx.clearRect(0, 0, rect.width, rect.height);
+    const scale = Number(bagScaleInput.value || 100) / 100;
+    const yOffset = Number(bagYOffsetInput.value || 0) / 100;
+    const width = rect.width * 0.50 * scale;
+    const height = rect.height * 0.62 * scale;
+    const cx = rect.width * 0.5;
+    const cy = rect.height * (0.52 + yOffset);
+    drawBagAt(cx, cy, width, height, 0);
   }
 
-  function drawTrackedBag(landmarks) {
-    if (!resizeBagCanvas()) return;
-    const rect = bagVideo.getBoundingClientRect();
-    clearBagCanvas();
-    const leftEyeAvg = avgPoint(landmarks, [33, 133, 159, 145]);
-    const rightEyeAvg = avgPoint(landmarks, [362, 263, 386, 374]);
-    const nose = mapToScreen(landmarks[1].x, landmarks[1].y);
-    const forehead = mapToScreen(landmarks[10].x, landmarks[10].y);
-    const chin = mapToScreen(landmarks[152].x, landmarks[152].y);
-    const leftEye = mapToScreen(leftEyeAvg.x, leftEyeAvg.y);
-    const rightEye = mapToScreen(rightEyeAvg.x, rightEyeAvg.y);
-    const dx = rightEye.x - leftEye.x;
-    const dy = rightEye.y - leftEye.y;
-    const eyeDist = Math.hypot(dx, dy);
-    const angle = Math.atan2(dy, dx);
-    const centerX = (leftEye.x + rightEye.x) / 2;
-    const centerY = nose.y + (chin.y - forehead.y) * 0.02;
-    const bagWidth = eyeDist * 3.35;
-    const bagHeight = bagWidth * 1.28;
-    drawBagAt(centerX, centerY, bagWidth, bagHeight, angle);
-  }
-
-  async function initTracking() {
-    if (faceMesh) return true;
-    try {
-      faceMesh = new FaceMesh({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-      });
-      faceMesh.setOptions({
-        maxNumFaces: 1,
-        refineLandmarks: true,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
-      });
-      faceMesh.onResults((results) => {
-        if (!bagRunning) return;
-        if (!results.multiFaceLandmarks || !results.multiFaceLandmarks.length) {
-          lastLandmarks = null;
-          lastFrameHadFace = false;
-          drawFallbackBag();
-          return;
-        }
-        lastLandmarks = results.multiFaceLandmarks[0];
-        lastFrameHadFace = true;
-        drawTrackedBag(lastLandmarks);
-      });
-      trackingReady = true;
-      return true;
-    } catch (err) {
-      trackingReady = false;
-      return false;
-    }
-  }
-
-  async function processFrame() {
+  function drawLoop() {
     if (!bagRunning) return;
-    if (trackingReady && !trackingBusy && bagVideo.readyState >= 2) {
-      trackingBusy = true;
-      try {
-        await faceMesh.send({ image: bagVideo });
-      } catch (err) {
-        trackingReady = false;
-        drawFallbackBag();
-        setBagStatus('Live camera is working. Tracking missed, so fallback bag overlay is showing.');
-      } finally {
-        trackingBusy = false;
-      }
-    } else if (!trackingReady) {
-      drawFallbackBag();
-    }
-    rafId = requestAnimationFrame(processFrame);
+    drawOverlay();
+    rafId = requestAnimationFrame(drawLoop);
   }
 
   function stopBagCamera() {
     bagRunning = false;
     cancelAnimationFrame(rafId);
-    rafId = 0;
     if (bagStream) {
       bagStream.getTracks().forEach(t => t.stop());
       bagStream = null;
     }
     bagVideo.pause();
     bagVideo.srcObject = null;
-    clearBagCanvas();
+    bagCtx.clearRect(0, 0, bagCanvas.width || 1, bagCanvas.height || 1);
     bagPlaceholder.style.display = 'block';
-    lastLandmarks = null;
   }
 
   async function startBagCamera() {
@@ -1360,21 +1294,12 @@
         bagCanvas.style.transform = 'none';
       }
 
-      resizeBagCanvas();
-      drawFallbackBag();
-
-      const ok = await initTracking();
-      if (ok) {
-        setBagStatus('Camera is live. If tracking catches your face, the bag should lock on. If not, fallback bag still shows.');
-      } else {
-        setBagStatus('Camera is live. Tracking library did not load, so fallback bag overlay is showing.');
-      }
-
       bagRunning = true;
-      processFrame();
+      drawLoop();
+      setBagStatus('Camera is live. Bag overlay is on. Use Bag size and Bag height to line it up fast.');
     } catch (err) {
-      setBagStatus('Camera permission got blocked or failed. This should have asked for camera access.');
       bagPlaceholder.style.display = 'block';
+      setBagStatus('Camera permission got blocked or failed. Use Take Photo as fallback.');
     }
   }
 
@@ -1393,8 +1318,13 @@
       octx.scale(-1, 1);
     }
     octx.drawImage(bagVideo, 0, 0, out.width, out.height);
-    octx.drawImage(bagCanvas, 0, 0, out.width, out.height);
+    const stageRect = bagVideo.getBoundingClientRect();
+    const scaleX = out.width / stageRect.width;
+    const scaleY = out.height / stageRect.height;
+    octx.scale(scaleX, scaleY);
+    octx.drawImage(bagCanvas, 0, 0);
     octx.restore();
+
     const dataUrl = out.toDataURL('image/png');
     bagAvatarPreview.src = dataUrl;
     bagAvatarPreview.style.display = 'block';
@@ -1413,44 +1343,29 @@
     setBagStatus('Processing phone photo for bag avatar...');
     const url = URL.createObjectURL(file);
     const img = new Image();
-    img.onload = async () => {
-      const off = document.createElement('canvas');
-      off.width = img.naturalWidth;
-      off.height = img.naturalHeight;
-      const ctx = off.getContext('2d');
-      ctx.drawImage(img, 0, 0);
+    img.onload = () => {
+      const out = document.createElement('canvas');
+      out.width = img.naturalWidth;
+      out.height = img.naturalHeight;
+      const octx = out.getContext('2d');
+      octx.drawImage(img, 0, 0);
 
-      // Try to detect face on still; fallback to centered bag if not.
-      let usedTracking = false;
-      try {
-        const ok = await initTracking();
-        if (ok) {
-          await faceMesh.send({ image: img });
-          if (lastLandmarks) {
-            // draw tracked bag using temporary fake sizing context from image dimensions
-            const prevRect = bagVideo.getBoundingClientRect.bind(bagVideo);
-            bagVideo.getBoundingClientRect = () => ({ width: off.width, height: off.height });
-            bagCanvas.width = off.width;
-            bagCanvas.height = off.height;
-            bagCtx.setTransform(1,0,0,1,0,0);
-            clearBagCanvas();
-            drawTrackedBag(lastLandmarks);
-            ctx.drawImage(bagCanvas, 0, 0, off.width, off.height);
-            bagVideo.getBoundingClientRect = prevRect;
-            usedTracking = true;
-          }
-        }
-      } catch {}
-      if (!usedTracking) {
-        const w = off.width, h = off.height;
-        bagCanvas.width = w; bagCanvas.height = h; bagCtx.setTransform(1,0,0,1,0,0);
-        bagVideo.getBoundingClientRect = () => ({ width: w, height: h });
-        clearBagCanvas();
-        drawBagAt(w * 0.5, h * 0.52, w * 0.5, h * 0.62, 0);
-        ctx.drawImage(bagCanvas, 0, 0, w, h);
-      }
+      const scale = Number(bagScaleInput.value || 100) / 100;
+      const yOffset = Number(bagYOffsetInput.value || 0) / 100;
+      const width = out.width * 0.50 * scale;
+      const height = out.height * 0.62 * scale;
+      const cx = out.width * 0.5;
+      const cy = out.height * (0.52 + yOffset);
 
-      const dataUrl = off.toDataURL('image/png');
+      bagCanvas.width = out.width;
+      bagCanvas.height = out.height;
+      bagCtx.setTransform(1,0,0,1,0,0);
+      bagCtx.clearRect(0,0,out.width,out.height);
+      drawBagAt(cx, cy, width, height, 0);
+
+      octx.drawImage(bagCanvas, 0, 0, out.width, out.height);
+      const dataUrl = out.toDataURL('image/png');
+
       bagAvatarPreview.src = dataUrl;
       bagAvatarPreview.style.display = 'block';
       bagAvatarEmpty.style.display = 'none';
@@ -1460,12 +1375,12 @@
         parsed.avatarDataUrl = dataUrl;
         localStorage.setItem('carltons_loadies_profile_v10', JSON.stringify(parsed));
       } catch {}
-      setBagStatus('Phone photo processed. Save Bag Settings to lock it in.');
       URL.revokeObjectURL(url);
+      setBagStatus('Phone photo processed. Save Bag Settings to lock it in.');
     };
     img.onerror = () => {
-      setBagStatus('Could not load that photo.');
       URL.revokeObjectURL(url);
+      setBagStatus('Could not load that photo.');
     };
     img.src = url;
   }
@@ -1487,18 +1402,16 @@
     e.target.value = '';
   });
 
-  [bagStyleInput, bagEyesInput, bagFlavorInput].forEach(el => {
-    el.addEventListener('change', () => {
-      if (lastLandmarks) drawTrackedBag(lastLandmarks);
-      else if (bagVideo.srcObject) drawFallbackBag();
-    });
+  [bagStyleInput, bagEyesInput, bagFlavorInput, bagScaleInput, bagYOffsetInput].forEach(el => {
+    el.addEventListener('input', () => { if (bagRunning) drawOverlay(); });
+    el.addEventListener('change', () => { if (bagRunning) drawOverlay(); });
   });
 
-  window.addEventListener('resize', () => {
-    if (lastLandmarks) drawTrackedBag(lastLandmarks);
-    else if (bagVideo.srcObject) drawFallbackBag();
-  });
+  window.addEventListener('resize', () => { if (bagRunning) drawOverlay(); });
 </script>
+</body>
+</html>
+
 </body>
 </html>
 
