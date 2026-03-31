@@ -436,6 +436,7 @@
           <div class="laneCard"><h3>ACT</h3><p>Bits grouped into a stronger lane with identity and momentum.</p></div>
         </div>
 
+        <div class="callout" style="margin-bottom:16px;"><strong>Drop Something Funny</strong> — raw first, tighten later. This is part of what got us here, so it stays in the build.</div>
         <div class="fieldGrid" style="margin-top:18px;">
           <div>
             <label class="label">Topic / name</label>
@@ -470,8 +471,46 @@
         </div>
       </div>
       <div class="panelBd">
+        <div class="laneGrid" style="margin-bottom:14px;">
+          <div class="laneCard">
+            <h3>Daily Premise Drop</h3>
+            <p id="dailyPremiseText">A cowboy discovers therapy.</p>
+            <div class="buttonRow" style="margin-top:10px;">
+              <button class="smallBtn" id="newDailyPremiseBtn">New Premise</button>
+              <button class="smallBtn" id="useDailyPremiseBtn">Use This Premise</button>
+            </div>
+          </div>
+          <div class="laneCard">
+            <h3>Test Your Chops</h3>
+            <p class="muted">Take these 3–4 cues and make something out of them.</p>
+            <ul id="chopsList" style="margin:10px 0 0 18px; line-height:1.45;"></ul>
+            <div class="buttonRow" style="margin-top:10px;">
+              <button class="smallBtn" id="newChopsBtn">New Cues</button>
+            </div>
+          </div>
+          <div class="laneCard">
+            <h3>Caption This</h3>
+            <p id="captionPromptText">A guy at a barbecue pretending he knows how to smoke meat.</p>
+            <div class="buttonRow" style="margin-top:10px;">
+              <button class="smallBtn" id="newCaptionBtn">New Prompt</button>
+            </div>
+          </div>
+          <div class="laneCard">
+            <h3>Ask / Answer</h3>
+            <p id="questionPromptText">Why do dogs lose their minds when you pick up keys?</p>
+            <div class="buttonRow" style="margin-top:10px;">
+              <button class="smallBtn" id="newQuestionBtn">New Question</button>
+            </div>
+          </div>
+        </div>
         <div class="feedCard">
           <h3>Local market</h3>
+          <div class="buttonRow" style="margin-bottom:10px;">
+            <button class="smallBtn" id="exportJsonBtn">Export JSON</button>
+            <button class="smallBtn" id="importJsonBtn">Import JSON</button>
+            <button class="smallBtn" id="wipeLocalBtn">Wipe Local Market</button>
+            <input id="importJsonInput" type="file" accept="application/json" style="display:none;">
+          </div>
           <div class="postList" id="feedList"></div>
         </div>
       </div>
@@ -1083,10 +1122,14 @@
 
 
 
+
 <script type="module">
+  import { FaceMesh } from "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js";
+
   const bagVideo = document.getElementById('bagVideo');
   const bagCanvas = document.getElementById('bagCanvas');
   const bagCtx = bagCanvas.getContext('2d');
+
   const bagStatus = document.getElementById('bagifyStatus');
   const bagPlaceholder = document.getElementById('bagifyPlaceholder');
   const bagOpenBtn = document.getElementById('bagifyOpenBtn');
@@ -1097,18 +1140,108 @@
   const bagFileInput = document.getElementById('bagifyFileInput');
   const bagAvatarPreview = document.getElementById('bagAvatarPreview');
   const bagAvatarEmpty = document.getElementById('bagAvatarEmpty');
+
   const bagStyleInput = document.getElementById('bagStyleInput');
   const bagEyesInput = document.getElementById('bagEyesInput');
   const bagFlavorInput = document.getElementById('bagFlavorInput');
   const bagScaleInput = document.getElementById('bagScaleInput');
   const bagYOffsetInput = document.getElementById('bagYOffsetInput');
 
+  const STORE_KEY = 'carltons_loadies_market_v10';
+  const PROFILE_KEY = 'carltons_loadies_profile_v10';
+
+  const dailyPremiseBank = [
+    "A cowboy discovers therapy.",
+    "Church parking lot energy.",
+    "Gas station sushi confidence.",
+    "A guy who thinks buying one tool made him a contractor.",
+    "Midlife crisis motorcycle logic.",
+    "A man explaining Bluetooth with full confidence and zero accuracy."
+  ];
+  const chopsBank = [
+    ["dentist", "airplane food", "crypto", "mother-in-law"],
+    ["parking lot", "energy drink", "wedding DJ", "fake confidence"],
+    ["raccoon", "Uber driver", "church shoes", "podcast"],
+    ["pickleball", "midlife crisis", "protein powder", "group chat"]
+  ];
+  const captionBank = [
+    "Two guys in lawn chairs watching a neighbor confidently do something incredibly wrong.",
+    "A dog with human-level disappointment watching its owner explain something unnecessary.",
+    "A guy at a barbecue pretending he knows how to smoke meat."
+  ];
+  const questionBank = [
+    "Why do dogs lose their minds when you pick up keys?",
+    "What’s the least trustworthy sentence a stranger can say at a gas station?",
+    "What hobby instantly makes a guy sound more dangerous than he actually is?"
+  ];
+
   let bagFacing = 'user';
   let bagStream = null;
   let bagRunning = false;
   let rafId = 0;
+  let faceMesh = null;
+  let trackingReady = false;
+  let trackingBusy = false;
+  let lastLandmarks = null;
+  let currentBagRect = null;
 
-  function setBagStatus(msg) { bagStatus.textContent = msg; }
+  function $(sel) { return document.querySelector(sel); }
+  function $$(sel) { return Array.from(document.querySelectorAll(sel)); }
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(() => el.classList.remove('show'), 1800);
+  }
+
+  function saveProfilePatch(patch) {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      const next = { ...parsed, ...patch };
+      localStorage.setItem(PROFILE_KEY, JSON.stringify(next));
+    } catch {}
+  }
+
+  function renderSavedBagAvatarMaybe() {
+    try {
+      const raw = localStorage.getItem(PROFILE_KEY);
+      const parsed = raw ? JSON.parse(raw) : {};
+      const src = (parsed.avatarDataUrl || '').trim();
+      if (bagAvatarPreview && bagAvatarEmpty) {
+        if (src) {
+          bagAvatarPreview.src = src;
+          bagAvatarPreview.style.display = 'block';
+          bagAvatarEmpty.style.display = 'none';
+        } else {
+          bagAvatarPreview.removeAttribute('src');
+          bagAvatarPreview.style.display = 'none';
+          bagAvatarEmpty.style.display = 'block';
+        }
+      }
+    } catch {}
+  }
+
+  function savePosts(posts) {
+    localStorage.setItem(STORE_KEY, JSON.stringify(posts));
+  }
+
+  function loadPosts() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function setBagStatus(msg) {
+    if (bagStatus) bagStatus.textContent = msg;
+  }
 
   function resizeBagCanvas() {
     const rect = bagVideo.getBoundingClientRect();
@@ -1120,6 +1253,17 @@
     bagCanvas.style.height = rect.height + 'px';
     bagCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
     return true;
+  }
+
+  function mapToScreen(normX, normY) {
+    const rect = bagVideo.getBoundingClientRect();
+    return { x: (1 - normX) * rect.width, y: normY * rect.height };
+  }
+
+  function avgPoint(landmarks, indices) {
+    let x = 0, y = 0;
+    for (const i of indices) { x += landmarks[i].x; y += landmarks[i].y; }
+    return { x: x / indices.length, y: y / indices.length };
   }
 
   function drawEyeHole(x, y, rx, ry, style) {
@@ -1157,6 +1301,8 @@
     const eyeStyle = bagEyesInput.value;
     const flavor = bagFlavorInput.value;
     const colors = getBagColors(bagStyle);
+
+    currentBagRect = { cx, cy, width, height, angle };
 
     bagCtx.save();
     bagCtx.translate(cx, cy);
@@ -1225,8 +1371,8 @@
     }
 
     const eyeY = height * 0.46;
-    drawEyeHole(width * 0.36, eyeY, width * 0.07, height * 0.06, bagEyesInput.value);
-    drawEyeHole(width * 0.64, eyeY, bagEyesInput.value === 'One small' ? width * 0.095 : width * 0.07, height * 0.06, bagEyesInput.value === 'One small' ? 'Wide' : bagEyesInput.value);
+    drawEyeHole(width * 0.36, eyeY, width * 0.07, height * 0.06, eyeStyle);
+    drawEyeHole(width * 0.64, eyeY, eyeStyle === 'One small' ? width * 0.095 : width * 0.07, height * 0.06, eyeStyle === 'One small' ? 'Wide' : eyeStyle);
 
     if (bagStyle === 'Recycle Stamp') {
       bagCtx.fillStyle = 'rgba(28,28,28,.72)';
@@ -1237,10 +1383,15 @@
     bagCtx.restore();
   }
 
-  function drawOverlay() {
+  function clearBagCanvas() {
+    const rect = bagVideo.getBoundingClientRect();
+    bagCtx.clearRect(0, 0, rect.width || bagCanvas.width, rect.height || bagCanvas.height);
+  }
+
+  function drawFallbackBag() {
     if (!resizeBagCanvas()) return;
     const rect = bagVideo.getBoundingClientRect();
-    bagCtx.clearRect(0, 0, rect.width, rect.height);
+    clearBagCanvas();
     const scale = Number(bagScaleInput.value || 100) / 100;
     const yOffset = Number(bagYOffsetInput.value || 0) / 100;
     const width = rect.width * 0.50 * scale;
@@ -1250,10 +1401,80 @@
     drawBagAt(cx, cy, width, height, 0);
   }
 
-  function drawLoop() {
+  function drawTrackedBag(landmarks) {
+    if (!resizeBagCanvas()) return;
+    const rect = bagVideo.getBoundingClientRect();
+    clearBagCanvas();
+
+    const leftEyeAvg = avgPoint(landmarks, [33, 133, 159, 145]);
+    const rightEyeAvg = avgPoint(landmarks, [362, 263, 386, 374]);
+    const nose = mapToScreen(landmarks[1].x, landmarks[1].y);
+    const forehead = mapToScreen(landmarks[10].x, landmarks[10].y);
+    const chin = mapToScreen(landmarks[152].x, landmarks[152].y);
+    const leftEye = mapToScreen(leftEyeAvg.x, leftEyeAvg.y);
+    const rightEye = mapToScreen(rightEyeAvg.x, rightEyeAvg.y);
+
+    const dx = rightEye.x - leftEye.x;
+    const dy = rightEye.y - leftEye.y;
+    const eyeDist = Math.hypot(dx, dy);
+    const angle = Math.atan2(dy, dx);
+    const scale = Number(bagScaleInput.value || 100) / 100;
+    const yOffset = Number(bagYOffsetInput.value || 0) / 100;
+    const bagWidth = eyeDist * 3.35 * scale;
+    const bagHeight = bagWidth * 1.28;
+    const centerX = (leftEye.x + rightEye.x) / 2;
+    const centerY = nose.y + (chin.y - forehead.y) * (0.02 + yOffset);
+
+    drawBagAt(centerX, centerY, bagWidth, bagHeight, angle);
+  }
+
+  async function initTracking() {
+    if (faceMesh) return true;
+    try {
+      faceMesh = new FaceMesh({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+      });
+      faceMesh.setOptions({
+        maxNumFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+      faceMesh.onResults((results) => {
+        if (!bagRunning) return;
+        if (!results.multiFaceLandmarks || !results.multiFaceLandmarks.length) {
+          lastLandmarks = null;
+          drawFallbackBag();
+          return;
+        }
+        lastLandmarks = results.multiFaceLandmarks[0];
+        drawTrackedBag(lastLandmarks);
+      });
+      trackingReady = true;
+      return true;
+    } catch (err) {
+      trackingReady = false;
+      return false;
+    }
+  }
+
+  async function processFrame() {
     if (!bagRunning) return;
-    drawOverlay();
-    rafId = requestAnimationFrame(drawLoop);
+    if (trackingReady && !trackingBusy && bagVideo.readyState >= 2) {
+      trackingBusy = true;
+      try {
+        await faceMesh.send({ image: bagVideo });
+      } catch (err) {
+        trackingReady = false;
+        drawFallbackBag();
+        setBagStatus('Camera is live. Tracking missed, so fallback bag overlay is showing.');
+      } finally {
+        trackingBusy = false;
+      }
+    } else {
+      drawFallbackBag();
+    }
+    rafId = requestAnimationFrame(processFrame);
   }
 
   function stopBagCamera() {
@@ -1265,8 +1486,9 @@
     }
     bagVideo.pause();
     bagVideo.srcObject = null;
-    bagCtx.clearRect(0, 0, bagCanvas.width || 1, bagCanvas.height || 1);
+    clearBagCanvas();
     bagPlaceholder.style.display = 'block';
+    lastLandmarks = null;
   }
 
   async function startBagCamera() {
@@ -1294,9 +1516,11 @@
         bagCanvas.style.transform = 'none';
       }
 
+      const ok = await initTracking();
       bagRunning = true;
-      drawLoop();
-      setBagStatus('Camera is live. Bag overlay is on. Use Bag size and Bag height to line it up fast.');
+      processFrame();
+      if (ok) setBagStatus('Camera is live. Tracking is on. Sliders are fallback / fine-tune.');
+      else setBagStatus('Camera is live. Tracking did not load, so fallback bag overlay is showing.');
     } catch (err) {
       bagPlaceholder.style.display = 'block';
       setBagStatus('Camera permission got blocked or failed. Use Take Photo as fallback.');
@@ -1318,24 +1542,25 @@
       octx.scale(-1, 1);
     }
     octx.drawImage(bagVideo, 0, 0, out.width, out.height);
+
     const stageRect = bagVideo.getBoundingClientRect();
     const scaleX = out.width / stageRect.width;
     const scaleY = out.height / stageRect.height;
+    octx.save();
     octx.scale(scaleX, scaleY);
     octx.drawImage(bagCanvas, 0, 0);
     octx.restore();
+    octx.restore();
 
     const dataUrl = out.toDataURL('image/png');
-    bagAvatarPreview.src = dataUrl;
-    bagAvatarPreview.style.display = 'block';
-    bagAvatarEmpty.style.display = 'none';
-    try {
-      const raw = localStorage.getItem('carltons_loadies_profile_v10');
-      const parsed = raw ? JSON.parse(raw) : {};
-      parsed.avatarDataUrl = dataUrl;
-      localStorage.setItem('carltons_loadies_profile_v10', JSON.stringify(parsed));
-    } catch {}
+    if (bagAvatarPreview && bagAvatarEmpty) {
+      bagAvatarPreview.src = dataUrl;
+      bagAvatarPreview.style.display = 'block';
+      bagAvatarEmpty.style.display = 'none';
+    }
+    saveProfilePatch({ avatarDataUrl: dataUrl });
     setBagStatus('Bag avatar captured. Save Bag Settings to lock it in.');
+    toast('Bag avatar captured.');
   }
 
   async function bagifyStillImage(file) {
@@ -1343,40 +1568,51 @@
     setBagStatus('Processing phone photo for bag avatar...');
     const url = URL.createObjectURL(file);
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       const out = document.createElement('canvas');
       out.width = img.naturalWidth;
       out.height = img.naturalHeight;
       const octx = out.getContext('2d');
       octx.drawImage(img, 0, 0);
 
-      const scale = Number(bagScaleInput.value || 100) / 100;
-      const yOffset = Number(bagYOffsetInput.value || 0) / 100;
-      const width = out.width * 0.50 * scale;
-      const height = out.height * 0.62 * scale;
-      const cx = out.width * 0.5;
-      const cy = out.height * (0.52 + yOffset);
-
       bagCanvas.width = out.width;
       bagCanvas.height = out.height;
-      bagCtx.setTransform(1,0,0,1,0,0);
-      bagCtx.clearRect(0,0,out.width,out.height);
-      drawBagAt(cx, cy, width, height, 0);
+      bagCtx.setTransform(1, 0, 0, 1, 0, 0);
+      bagCtx.clearRect(0, 0, out.width, out.height);
+
+      // Try tracking on still image first
+      let drewTracked = false;
+      try {
+        const ok = await initTracking();
+        if (ok) {
+          await faceMesh.send({ image: img });
+          if (lastLandmarks) {
+            const oldRect = bagVideo.getBoundingClientRect;
+            bagVideo.getBoundingClientRect = () => ({ width: out.width, height: out.height });
+            drawTrackedBag(lastLandmarks);
+            bagVideo.getBoundingClientRect = oldRect;
+            drewTracked = true;
+          }
+        }
+      } catch {}
+      if (!drewTracked) {
+        const scale = Number(bagScaleInput.value || 100) / 100;
+        const yOffset = Number(bagYOffsetInput.value || 0) / 100;
+        drawBagAt(out.width * 0.5, out.height * (0.52 + yOffset), out.width * 0.5 * scale, out.height * 0.62 * scale, 0);
+      }
 
       octx.drawImage(bagCanvas, 0, 0, out.width, out.height);
       const dataUrl = out.toDataURL('image/png');
 
-      bagAvatarPreview.src = dataUrl;
-      bagAvatarPreview.style.display = 'block';
-      bagAvatarEmpty.style.display = 'none';
-      try {
-        const raw = localStorage.getItem('carltons_loadies_profile_v10');
-        const parsed = raw ? JSON.parse(raw) : {};
-        parsed.avatarDataUrl = dataUrl;
-        localStorage.setItem('carltons_loadies_profile_v10', JSON.stringify(parsed));
-      } catch {}
+      if (bagAvatarPreview && bagAvatarEmpty) {
+        bagAvatarPreview.src = dataUrl;
+        bagAvatarPreview.style.display = 'block';
+        bagAvatarEmpty.style.display = 'none';
+      }
+      saveProfilePatch({ avatarDataUrl: dataUrl });
       URL.revokeObjectURL(url);
       setBagStatus('Phone photo processed. Save Bag Settings to lock it in.');
+      toast('Bag photo processed.');
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
@@ -1385,30 +1621,120 @@
     img.src = url;
   }
 
-  bagOpenBtn.addEventListener('click', startBagCamera);
-  bagFlipBtn.addEventListener('click', async () => {
+  // Hook bag controls
+  bagOpenBtn?.addEventListener('click', startBagCamera);
+  bagFlipBtn?.addEventListener('click', async () => {
     bagFacing = bagFacing === 'user' ? 'environment' : 'user';
     await startBagCamera();
   });
-  bagCaptureBtn.addEventListener('click', captureBagAvatar);
-  bagStopBtn.addEventListener('click', () => {
+  bagCaptureBtn?.addEventListener('click', captureBagAvatar);
+  bagStopBtn?.addEventListener('click', () => {
     stopBagCamera();
     setBagStatus('Bag camera stopped.');
   });
-  bagFileBtn.addEventListener('click', () => bagFileInput.click());
-  bagFileInput.addEventListener('change', async (e) => {
+  bagFileBtn?.addEventListener('click', () => bagFileInput?.click());
+  bagFileInput?.addEventListener('change', async (e) => {
     const file = e.target.files && e.target.files[0];
     await bagifyStillImage(file);
     e.target.value = '';
   });
 
   [bagStyleInput, bagEyesInput, bagFlavorInput, bagScaleInput, bagYOffsetInput].forEach(el => {
-    el.addEventListener('input', () => { if (bagRunning) drawOverlay(); });
-    el.addEventListener('change', () => { if (bagRunning) drawOverlay(); });
+    el?.addEventListener('input', () => {
+      if (bagRunning) {
+        if (lastLandmarks) drawTrackedBag(lastLandmarks);
+        else drawFallbackBag();
+      }
+    });
+    el?.addEventListener('change', () => {
+      if (bagRunning) {
+        if (lastLandmarks) drawTrackedBag(lastLandmarks);
+        else drawFallbackBag();
+      }
+    });
   });
 
-  window.addEventListener('resize', () => { if (bagRunning) drawOverlay(); });
+  // Restore market helpers if present
+  function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  const dailyEl = document.getElementById('dailyPremiseText');
+  const chopsEl = document.getElementById('chopsList');
+  const captionEl = document.getElementById('captionPromptText');
+  const questionEl = document.getElementById('questionPromptText');
+
+  function refreshPrompts() {
+    if (dailyEl) dailyEl.textContent = pickRandom(dailyPremiseBank);
+    if (captionEl) captionEl.textContent = pickRandom(captionBank);
+    if (questionEl) questionEl.textContent = pickRandom(questionBank);
+    if (chopsEl) {
+      const chops = pickRandom(chopsBank);
+      chopsEl.innerHTML = chops.map(c => `<li>${c}</li>`).join('');
+    }
+  }
+
+  document.getElementById('newDailyPremiseBtn')?.addEventListener('click', refreshPrompts);
+  document.getElementById('newChopsBtn')?.addEventListener('click', refreshPrompts);
+  document.getElementById('newCaptionBtn')?.addEventListener('click', refreshPrompts);
+  document.getElementById('newQuestionBtn')?.addEventListener('click', refreshPrompts);
+  document.getElementById('useDailyPremiseBtn')?.addEventListener('click', () => {
+    const premise = dailyEl?.textContent?.trim() || '';
+    const topicInput = document.getElementById('textTopicInput');
+    const bodyInput = document.getElementById('textBodyInput');
+    if (topicInput) topicInput.value = premise;
+    if (bodyInput && !bodyInput.value.trim()) bodyInput.value = `Premise: ${premise}\n\n`;
+    toast('Daily premise loaded.');
+    document.querySelector('[data-open="loadup"]')?.click();
+  });
+
+  document.getElementById('exportJsonBtn')?.addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(loadPosts(), null, 2)], { type:'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'carltons-loadies-market.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast('Exported.');
+  });
+
+  document.getElementById('importJsonBtn')?.addEventListener('click', () => {
+    document.getElementById('importJsonInput')?.click();
+  });
+
+  document.getElementById('importJsonInput')?.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const parsed = JSON.parse(text);
+      if (!Array.isArray(parsed)) throw new Error('bad');
+      savePosts(parsed);
+      toast('Imported.');
+      location.reload();
+    } catch {
+      toast('Import failed.');
+    } finally {
+      e.target.value = '';
+    }
+  });
+
+  document.getElementById('wipeLocalBtn')?.addEventListener('click', () => {
+    localStorage.removeItem(STORE_KEY);
+    toast('Wiped local market.');
+    location.reload();
+  });
+
+  renderSavedBagAvatarMaybe();
+  refreshPrompts();
+  window.addEventListener('resize', () => {
+    if (bagRunning) {
+      if (lastLandmarks) drawTrackedBag(lastLandmarks);
+      else drawFallbackBag();
+    }
+  });
 </script>
+</body>
+</html>
+
 </body>
 </html>
 
