@@ -258,25 +258,66 @@
     line-height:1.45;
   }
 
+  
+  /* V14 mobile-first cleanup */
+  .topbarInner { justify-content:flex-start; }
+  .heroInner { min-height:560px; }
+  .heroButtons { gap:10px; }
+  .heroBtn { padding:14px 16px; }
+  .heroBtn.primary { min-width:300px; }
+  .panelHd p { max-width:48ch; }
+  .sectionNav { padding-bottom:14px; }
+  .sectionNavInner { gap:8px; }
+  .sectionBtn { padding:11px 12px; }
+  #panel-standup .panelHd p,
+  #panel-bag .panelHd p { max-width:42ch; }
+  .cameraCard, .sideCard, .bagifyCard { padding:12px; }
+  .bagifyStage { min-height:360px; }
+  .bagifyPlaceholder { font-size:.88rem; }
+  #bagifyOpenBtn, #bagifyFlipBtn, #bagifyCaptureBtn, #bagifyStopBtn, #bagifyFileBtn {
+    min-height:46px;
+  }
+
   @media (max-width: 1080px) {
-    .heroInner { grid-template-columns:1fr; min-height:0; padding-bottom:12px; }
-    .heroFigure { min-height:320px; order:-1; }
-    .performer { right:0; top:0; width:100%; background-position:center top; }
-    .hero::before { background:linear-gradient(180deg, rgba(9,10,12,.72) 0%, rgba(9,10,12,.88) 42%, rgba(9,10,12,.97) 100%); }
+    .heroInner { grid-template-columns:1fr; min-height:0; padding:18px 14px 12px; }
+    .heroFigure { min-height:220px; order:-1; }
+    .performer { right:0; top:-8px; width:100%; background-position:center top; background-size:contain; }
+    .hero::before { background:linear-gradient(180deg, rgba(9,10,12,.60) 0%, rgba(9,10,12,.86) 34%, rgba(9,10,12,.97) 100%); }
+    .heroCopy { padding-right:0; }
+    .heroTitle { font-size:clamp(2.2rem, 11vw, 3.5rem); max-width:none; }
+    .heroTag { font-size:clamp(1.15rem, 5.2vw, 1.5rem); max-width:none; margin-top:10px; }
+    .heroExplain { font-size:.96rem; max-width:none; margin-top:12px; }
+    .heroButtons { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .heroBtn { width:100%; min-width:0 !important; padding:13px 12px; font-size:.94rem; box-shadow:none; }
+    .heroBtn.primary { grid-column:1 / -1; }
+    .heroBtn small { font-size:.72rem; }
+    .heroNotes { margin-top:12px; gap:8px; }
+    .heroNote { font-size:.8rem; padding:7px 10px; }
+    .sectionNav { padding:0 14px 12px; margin-top:-4px; }
+    .sectionNavInner { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .sectionBtn { width:100%; font-size:.88rem; padding:10px 10px; }
+    .wrap { padding:0 14px; }
+    main.wrap { padding-top:10px; padding-bottom:26px; }
+    .panelHd { padding:12px 14px; }
+    .panelBd { padding:14px; }
+    .panelHd h2 { font-size:1rem; }
+    .panelHd p { font-size:.92rem; margin-top:4px; }
     .cameraGrid, .comicGrid, .laneGrid, .fieldGrid, .bagifyGrid { grid-template-columns:1fr; }
+    .buttonRow { gap:8px; }
+    .smallBtn { flex:1 1 calc(50% - 8px); min-height:46px; padding:10px 12px; }
+    .recordBtn { font-size:1.15rem; padding:16px 16px; }
+    .timer { font-size:1.7rem; }
+    .videoWrap { aspect-ratio:3/4; }
+    .bagifyStage { aspect-ratio:3/4; min-height:420px; }
+    .bagifyPlaceholder { inset:auto 10px 10px 10px; font-size:.84rem; padding:9px 10px; }
+    .bagAvatarPreviewWrap { min-height:180px; }
   }
 </style>
 </head>
 <body>
   <div class="topbar">
     <div class="topbarInner">
-      <div class="brand">Carlton’s Loadies</div>
-      <div class="topPills">
-        <div class="topPill">Top</div>
-        <div class="topPill">Newest</div>
-        <div class="topPill">Mine</div>
-      </div>
-    </div>
+      <div class="brand">Carlton’s Loadies</div>    </div>
   </div>
 
   <section class="hero">
@@ -286,8 +327,7 @@
         <h1 class="heroTitle">Carlton’s<br>Loadies</h1>
         <div class="heroTag">Funny is funny. Nobody cares who you are. Be funny.</div>
         <div class="heroExplain">
-          The bag is the point. Be who you want. Nobody cares what you look like, where you’re from, or what your name is.
-          If you’re funny, you’re funny. This format takes some of the fear out of it. Hit record. You get 30 seconds. Go.
+          Put on the bag and go. Nobody cares what you look like. If you’re funny, you’re funny. You get 30 seconds.
         </div>
 
         <div class="heroButtons">
@@ -298,9 +338,8 @@
         </div>
 
         <div class="heroNotes">
-          <div class="heroNote">CLIP → JOKE → BIT → ACT → SET</div>
           <div class="heroNote">EVERYONE GETS A BAG</div>
-          <div class="heroNote">FUNNY OVER POLISH</div>
+          <div class="heroNote">30 SECONDS</div>
         </div>
       </div>
 
@@ -491,6 +530,8 @@
               <button class="smallBtn" id="bagifyFlipBtn" type="button">Flip</button>
               <button class="smallBtn" id="bagifyCaptureBtn" type="button">Capture Bag</button>
               <button class="smallBtn" id="bagifyStopBtn" type="button">Stop</button>
+              <button class="smallBtn" id="bagifyFileBtn" type="button">Take Photo</button>
+              <input id="bagifyFileInput" type="file" accept="image/*" capture="user" style="display:none;">
             </div>
             <div class="muted" id="bagifyStatus" style="margin-top:10px;">Bagify idle.</div>
           </div>
@@ -1023,6 +1064,7 @@
 </script>
 
 
+
 <script type="module">
   import { FaceMesh } from "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js";
 
@@ -1035,6 +1077,8 @@
   const bagFlipBtn = document.getElementById('bagifyFlipBtn');
   const bagCaptureBtn = document.getElementById('bagifyCaptureBtn');
   const bagStopBtn = document.getElementById('bagifyStopBtn');
+  const bagFileBtn = document.getElementById('bagifyFileBtn');
+  const bagFileInput = document.getElementById('bagifyFileInput');
   const bagAvatarPreview = document.getElementById('bagAvatarPreview');
   const bagAvatarEmpty = document.getElementById('bagAvatarEmpty');
   const bagStyleInput = document.getElementById('bagStyleInput');
@@ -1049,18 +1093,20 @@
   let trackingBusy = false;
   let rafId = 0;
   let lastLandmarks = null;
+  let lastFrameHadFace = false;
 
   function setBagStatus(msg) { bagStatus.textContent = msg; }
 
   function resizeBagCanvas() {
     const rect = bagVideo.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    if (!rect.width || !rect.height) return;
+    if (!rect.width || !rect.height) return false;
     bagCanvas.width = Math.round(rect.width * dpr);
     bagCanvas.height = Math.round(rect.height * dpr);
     bagCanvas.style.width = rect.width + 'px';
     bagCanvas.style.height = rect.height + 'px';
     bagCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return true;
   }
 
   function mapToScreen(normX, normY) {
@@ -1189,18 +1235,22 @@
     bagCtx.restore();
   }
 
-  function drawFallbackBag() {
-    resizeBagCanvas();
+  function clearBagCanvas() {
     const rect = bagVideo.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    bagCtx.clearRect(0, 0, rect.width, rect.height);
-    drawBagAt(rect.width * 0.5, rect.height * 0.52, rect.width * 0.48, rect.height * 0.62, 0);
+    bagCtx.clearRect(0, 0, rect.width || bagCanvas.width, rect.height || bagCanvas.height);
+  }
+
+  function drawFallbackBag() {
+    if (!resizeBagCanvas()) return;
+    const rect = bagVideo.getBoundingClientRect();
+    clearBagCanvas();
+    drawBagAt(rect.width * 0.5, rect.height * 0.52, rect.width * 0.50, rect.height * 0.62, 0);
   }
 
   function drawTrackedBag(landmarks) {
-    resizeBagCanvas();
+    if (!resizeBagCanvas()) return;
     const rect = bagVideo.getBoundingClientRect();
-    bagCtx.clearRect(0, 0, rect.width, rect.height);
+    clearBagCanvas();
     const leftEyeAvg = avgPoint(landmarks, [33, 133, 159, 145]);
     const rightEyeAvg = avgPoint(landmarks, [362, 263, 386, 374]);
     const nose = mapToScreen(landmarks[1].x, landmarks[1].y);
@@ -1220,27 +1270,35 @@
   }
 
   async function initTracking() {
-    if (faceMesh) return;
-    faceMesh = new FaceMesh({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-    });
-    faceMesh.setOptions({
-      maxNumFaces: 1,
-      refineLandmarks: true,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5
-    });
-    faceMesh.onResults((results) => {
-      if (!bagRunning) return;
-      if (!results.multiFaceLandmarks || !results.multiFaceLandmarks.length) {
-        lastLandmarks = null;
-        drawFallbackBag();
-        return;
-      }
-      lastLandmarks = results.multiFaceLandmarks[0];
-      drawTrackedBag(lastLandmarks);
-    });
-    trackingReady = true;
+    if (faceMesh) return true;
+    try {
+      faceMesh = new FaceMesh({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+      });
+      faceMesh.setOptions({
+        maxNumFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
+      });
+      faceMesh.onResults((results) => {
+        if (!bagRunning) return;
+        if (!results.multiFaceLandmarks || !results.multiFaceLandmarks.length) {
+          lastLandmarks = null;
+          lastFrameHadFace = false;
+          drawFallbackBag();
+          return;
+        }
+        lastLandmarks = results.multiFaceLandmarks[0];
+        lastFrameHadFace = true;
+        drawTrackedBag(lastLandmarks);
+      });
+      trackingReady = true;
+      return true;
+    } catch (err) {
+      trackingReady = false;
+      return false;
+    }
   }
 
   async function processFrame() {
@@ -1252,7 +1310,7 @@
       } catch (err) {
         trackingReady = false;
         drawFallbackBag();
-        setBagStatus('Live camera is working. Tracking library missed, so fallback bag overlay is showing.');
+        setBagStatus('Live camera is working. Tracking missed, so fallback bag overlay is showing.');
       } finally {
         trackingBusy = false;
       }
@@ -1272,8 +1330,9 @@
     }
     bagVideo.pause();
     bagVideo.srcObject = null;
-    bagCtx.clearRect(0, 0, bagCanvas.width, bagCanvas.height);
+    clearBagCanvas();
     bagPlaceholder.style.display = 'block';
+    lastLandmarks = null;
   }
 
   async function startBagCamera() {
@@ -1289,8 +1348,10 @@
         },
         audio: false
       });
+
       bagVideo.srcObject = bagStream;
       await bagVideo.play();
+
       if (bagFacing === 'user') {
         bagVideo.style.transform = 'scaleX(-1)';
         bagCanvas.style.transform = 'scaleX(-1)';
@@ -1298,15 +1359,17 @@
         bagVideo.style.transform = 'none';
         bagCanvas.style.transform = 'none';
       }
+
       resizeBagCanvas();
       drawFallbackBag();
-      try {
-        await initTracking();
-        setBagStatus('Camera is live. Bag overlay should sit on your face now.');
-      } catch (err) {
-        trackingReady = false;
-        setBagStatus('Camera is live. Tracking did not load, so fallback bag overlay is showing.');
+
+      const ok = await initTracking();
+      if (ok) {
+        setBagStatus('Camera is live. If tracking catches your face, the bag should lock on. If not, fallback bag still shows.');
+      } else {
+        setBagStatus('Camera is live. Tracking library did not load, so fallback bag overlay is showing.');
       }
+
       bagRunning = true;
       processFrame();
     } catch (err) {
@@ -1345,6 +1408,68 @@
     setBagStatus('Bag avatar captured. Save Bag Settings to lock it in.');
   }
 
+  async function bagifyStillImage(file) {
+    if (!file) return;
+    setBagStatus('Processing phone photo for bag avatar...');
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = async () => {
+      const off = document.createElement('canvas');
+      off.width = img.naturalWidth;
+      off.height = img.naturalHeight;
+      const ctx = off.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+
+      // Try to detect face on still; fallback to centered bag if not.
+      let usedTracking = false;
+      try {
+        const ok = await initTracking();
+        if (ok) {
+          await faceMesh.send({ image: img });
+          if (lastLandmarks) {
+            // draw tracked bag using temporary fake sizing context from image dimensions
+            const prevRect = bagVideo.getBoundingClientRect.bind(bagVideo);
+            bagVideo.getBoundingClientRect = () => ({ width: off.width, height: off.height });
+            bagCanvas.width = off.width;
+            bagCanvas.height = off.height;
+            bagCtx.setTransform(1,0,0,1,0,0);
+            clearBagCanvas();
+            drawTrackedBag(lastLandmarks);
+            ctx.drawImage(bagCanvas, 0, 0, off.width, off.height);
+            bagVideo.getBoundingClientRect = prevRect;
+            usedTracking = true;
+          }
+        }
+      } catch {}
+      if (!usedTracking) {
+        const w = off.width, h = off.height;
+        bagCanvas.width = w; bagCanvas.height = h; bagCtx.setTransform(1,0,0,1,0,0);
+        bagVideo.getBoundingClientRect = () => ({ width: w, height: h });
+        clearBagCanvas();
+        drawBagAt(w * 0.5, h * 0.52, w * 0.5, h * 0.62, 0);
+        ctx.drawImage(bagCanvas, 0, 0, w, h);
+      }
+
+      const dataUrl = off.toDataURL('image/png');
+      bagAvatarPreview.src = dataUrl;
+      bagAvatarPreview.style.display = 'block';
+      bagAvatarEmpty.style.display = 'none';
+      try {
+        const raw = localStorage.getItem('carltons_loadies_profile_v10');
+        const parsed = raw ? JSON.parse(raw) : {};
+        parsed.avatarDataUrl = dataUrl;
+        localStorage.setItem('carltons_loadies_profile_v10', JSON.stringify(parsed));
+      } catch {}
+      setBagStatus('Phone photo processed. Save Bag Settings to lock it in.');
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = () => {
+      setBagStatus('Could not load that photo.');
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+  }
+
   bagOpenBtn.addEventListener('click', startBagCamera);
   bagFlipBtn.addEventListener('click', async () => {
     bagFacing = bagFacing === 'user' ? 'environment' : 'user';
@@ -1354,6 +1479,12 @@
   bagStopBtn.addEventListener('click', () => {
     stopBagCamera();
     setBagStatus('Bag camera stopped.');
+  });
+  bagFileBtn.addEventListener('click', () => bagFileInput.click());
+  bagFileInput.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    await bagifyStillImage(file);
+    e.target.value = '';
   });
 
   [bagStyleInput, bagEyesInput, bagFlavorInput].forEach(el => {
@@ -1368,6 +1499,9 @@
     else if (bagVideo.srcObject) drawFallbackBag();
   });
 </script>
+</body>
+</html>
+
 </body>
 </html>
 
