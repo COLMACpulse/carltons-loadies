@@ -201,6 +201,7 @@
   .bagifyStage {
     position:relative;
     aspect-ratio:16/10;
+    min-height:280px;
     border-radius:16px;
     overflow:hidden;
     border:1px solid var(--line);
@@ -216,7 +217,8 @@
     object-fit:cover;
     display:block;
   }
-  #bagCanvas { pointer-events:none; }
+  #bagVideo { z-index:1; background:#000; }
+  #bagCanvas { z-index:2; pointer-events:none; }
   .bagifyPlaceholder {
     position:absolute;
     inset:auto 12px 12px 12px;
@@ -482,7 +484,7 @@
             <div class="bagifyStage">
               <video id="bagVideo" playsinline autoplay muted></video>
               <canvas id="bagCanvas"></canvas>
-              <div class="bagifyPlaceholder" id="bagifyPlaceholder">Open camera and the bag locks onto your face. This stays inside YOUR BAG. It does not take over the app.</div>
+              <div class="bagifyPlaceholder" id="bagifyPlaceholder">Open bag camera. You should see yourself live first. Then the bag overlay should sit on your face. Capture it when it looks right.</div>
             </div>
             <div class="buttonRow" style="margin-top:12px;">
               <button class="smallBtn" id="bagifyOpenBtn" type="button">Open Bag Camera</button>
@@ -1020,9 +1022,9 @@
 })();
 </script>
 
+
 <script type="module">
   import { FaceMesh } from "https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js";
-  import { Camera } from "https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js";
 
   const bagVideo = document.getElementById('bagVideo');
   const bagCanvas = document.getElementById('bagCanvas');
@@ -1040,18 +1042,20 @@
   const bagFlavorInput = document.getElementById('bagFlavorInput');
 
   let bagFacing = 'user';
-  let bagCamera = null;
   let bagStream = null;
   let bagRunning = false;
-  let lastResults = null;
+  let faceMesh = null;
+  let trackingReady = false;
+  let trackingBusy = false;
+  let rafId = 0;
+  let lastLandmarks = null;
 
-  function setBagStatus(msg) {
-    bagStatus.textContent = msg;
-  }
+  function setBagStatus(msg) { bagStatus.textContent = msg; }
 
   function resizeBagCanvas() {
     const rect = bagVideo.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
+    if (!rect.width || !rect.height) return;
     bagCanvas.width = Math.round(rect.width * dpr);
     bagCanvas.height = Math.round(rect.height * dpr);
     bagCanvas.style.width = rect.width + 'px';
@@ -1061,48 +1065,142 @@
 
   function mapToScreen(normX, normY) {
     const rect = bagVideo.getBoundingClientRect();
-    const x = (1 - normX) * rect.width;
-    const y = normY * rect.height;
-    return { x, y };
+    return { x: (1 - normX) * rect.width, y: normY * rect.height };
   }
 
   function avgPoint(landmarks, indices) {
     let x = 0, y = 0;
-    for (const i of indices) {
-      x += landmarks[i].x;
-      y += landmarks[i].y;
-    }
+    for (const i of indices) { x += landmarks[i].x; y += landmarks[i].y; }
     return { x: x / indices.length, y: y / indices.length };
   }
 
-  function drawEyeHole(ctx, x, y, rx, ry, style) {
-    ctx.save();
-    ctx.fillStyle = '#0a0a0c';
-    ctx.beginPath();
+  function drawEyeHole(x, y, rx, ry, style) {
+    bagCtx.save();
+    bagCtx.fillStyle = '#0a0a0c';
+    bagCtx.beginPath();
     if (style === 'Round') {
-      ctx.ellipse(x, y, rx * 0.86, ry * 0.86, 0, 0, Math.PI * 2);
+      bagCtx.ellipse(x, y, rx * 0.86, ry * 0.86, 0, 0, Math.PI * 2);
     } else if (style === 'Wide') {
-      ctx.ellipse(x, y, rx * 1.25, ry * 0.7, -0.08, 0, Math.PI * 2);
+      bagCtx.ellipse(x, y, rx * 1.25, ry * 0.7, -0.08, 0, Math.PI * 2);
     } else if (style === 'One small') {
-      ctx.ellipse(x, y, rx * 0.65, ry * 0.78, 0, 0, Math.PI * 2);
+      bagCtx.ellipse(x, y, rx * 0.65, ry * 0.78, 0, 0, Math.PI * 2);
     } else {
-      ctx.moveTo(x - rx * 0.9, y - ry * 0.55);
-      ctx.lineTo(x - rx * 0.25, y - ry);
-      ctx.lineTo(x + rx * 0.95, y - ry * 0.2);
-      ctx.lineTo(x + rx * 0.35, y + ry);
-      ctx.lineTo(x - rx * 0.95, y + ry * 0.35);
-      ctx.closePath();
+      bagCtx.moveTo(x - rx * 0.9, y - ry * 0.55);
+      bagCtx.lineTo(x - rx * 0.25, y - ry);
+      bagCtx.lineTo(x + rx * 0.95, y - ry * 0.2);
+      bagCtx.lineTo(x + rx * 0.35, y + ry);
+      bagCtx.lineTo(x - rx * 0.95, y + ry * 0.35);
+      bagCtx.closePath();
     }
-    ctx.fill();
-    ctx.restore();
+    bagCtx.fill();
+    bagCtx.restore();
   }
 
-  function drawBagOverlay(landmarks) {
+  function getBagColors(style) {
+    let base = '#c9975b', topTone = '#e0bb84', lineTone = 'rgba(90,50,22,.32)';
+    if (style === 'White Lunch') { base = '#d7d2c8'; topTone = '#ece7de'; lineTone = 'rgba(80,80,80,.22)'; }
+    else if (style === 'Grease Bag') { base = '#b99354'; topTone = '#d3ad70'; lineTone = 'rgba(82,48,18,.34)'; }
+    else if (style === 'Recycle Stamp') { base = '#c79b5c'; topTone = '#ddb778'; lineTone = 'rgba(68,44,22,.28)'; }
+    return { base, topTone, lineTone };
+  }
+
+  function drawBagAt(cx, cy, width, height, angle) {
+    const bagStyle = bagStyleInput.value;
+    const eyeStyle = bagEyesInput.value;
+    const flavor = bagFlavorInput.value;
+    const { base, topTone, lineTone } = getBagColors(bagStyle);
+
+    bagCtx.save();
+    bagCtx.translate(cx, cy);
+    bagCtx.rotate(angle);
+    bagCtx.translate(-width / 2, -height * 0.34);
+
+    const grad = bagCtx.createLinearGradient(0, 0, width, height);
+    grad.addColorStop(0, topTone);
+    grad.addColorStop(0.42, base);
+    grad.addColorStop(1, '#a77542');
+    bagCtx.fillStyle = grad;
+    bagCtx.beginPath();
+    bagCtx.moveTo(width * 0.15, 0);
+    bagCtx.lineTo(width * 0.85, 0);
+    bagCtx.lineTo(width, height * 0.18);
+    bagCtx.lineTo(width * 0.73, height);
+    bagCtx.lineTo(width * 0.27, height);
+    bagCtx.lineTo(0, height * 0.18);
+    bagCtx.closePath();
+    bagCtx.fill();
+
+    bagCtx.strokeStyle = lineTone;
+    bagCtx.lineWidth = Math.max(1.1, width * 0.007);
+    bagCtx.beginPath();
+    bagCtx.moveTo(width * 0.15, 0);
+    bagCtx.lineTo(width * 0.5, height * 0.14);
+    bagCtx.lineTo(width * 0.85, 0);
+    bagCtx.moveTo(0, height * 0.18);
+    bagCtx.lineTo(width * 0.5, height * 0.14);
+    bagCtx.lineTo(width, height * 0.18);
+    bagCtx.stroke();
+
+    const wrinkleLines = [
+      [0.20,0.28,0.34,0.22],[0.62,0.26,0.54,0.34],[0.30,0.46,0.42,0.50],[0.68,0.44,0.58,0.56],
+      [0.38,0.62,0.48,0.69],[0.56,0.67,0.66,0.61],[0.24,0.74,0.31,0.66],[0.71,0.79,0.60,0.72]
+    ];
+    if (['Wrinkled','Grease','Scribble','Tape'].includes(flavor)) {
+      bagCtx.globalAlpha = 0.18;
+      bagCtx.strokeStyle = 'rgba(60,35,14,.55)';
+      wrinkleLines.forEach(([x1,y1,x2,y2]) => {
+        bagCtx.beginPath();
+        bagCtx.moveTo(width * x1, height * y1);
+        bagCtx.lineTo(width * x2, height * y2);
+        bagCtx.stroke();
+      });
+      bagCtx.globalAlpha = 1;
+    }
+    if (flavor === 'Tape') {
+      bagCtx.fillStyle = 'rgba(220,220,210,.72)';
+      bagCtx.fillRect(width * 0.12, height * 0.58, width * 0.18, height * 0.05);
+    }
+    if (flavor === 'Grease') {
+      bagCtx.fillStyle = 'rgba(84,56,24,.16)';
+      bagCtx.beginPath();
+      bagCtx.ellipse(width * 0.68, height * 0.54, width * 0.13, height * 0.07, 0.2, 0, Math.PI * 2);
+      bagCtx.fill();
+    }
+    if (flavor === 'Scribble') {
+      bagCtx.strokeStyle = 'rgba(44,30,20,.85)';
+      bagCtx.lineWidth = Math.max(1.4, width * 0.006);
+      bagCtx.beginPath();
+      bagCtx.moveTo(width * 0.18, height * 0.23);
+      bagCtx.lineTo(width * 0.3, height * 0.19);
+      bagCtx.lineTo(width * 0.42, height * 0.24);
+      bagCtx.stroke();
+    }
+
+    const eyeY = height * 0.46;
+    drawEyeHole(width * 0.36, eyeY, width * 0.07, height * 0.06, eyeStyle);
+    drawEyeHole(width * 0.64, eyeY, eyeStyle === 'One small' ? width * 0.095 : width * 0.07, height * 0.06, eyeStyle === 'One small' ? 'Wide' : eyeStyle);
+
+    if (bagStyle === 'Recycle Stamp') {
+      bagCtx.fillStyle = 'rgba(28,28,28,.72)';
+      bagCtx.font = `${Math.max(10, width * 0.038)}px Arial`;
+      bagCtx.textAlign = 'center';
+      bagCtx.fillText('RECYCLE THIS BAG', width * 0.5, height * 0.18);
+    }
+    bagCtx.restore();
+  }
+
+  function drawFallbackBag() {
+    resizeBagCanvas();
+    const rect = bagVideo.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    bagCtx.clearRect(0, 0, rect.width, rect.height);
+    drawBagAt(rect.width * 0.5, rect.height * 0.52, rect.width * 0.48, rect.height * 0.62, 0);
+  }
+
+  function drawTrackedBag(landmarks) {
     resizeBagCanvas();
     const rect = bagVideo.getBoundingClientRect();
     bagCtx.clearRect(0, 0, rect.width, rect.height);
-    if (!landmarks) return;
-
     const leftEyeAvg = avgPoint(landmarks, [33, 133, 159, 145]);
     const rightEyeAvg = avgPoint(landmarks, [362, 263, 386, 374]);
     const nose = mapToScreen(landmarks[1].x, landmarks[1].y);
@@ -1110,214 +1208,141 @@
     const chin = mapToScreen(landmarks[152].x, landmarks[152].y);
     const leftEye = mapToScreen(leftEyeAvg.x, leftEyeAvg.y);
     const rightEye = mapToScreen(rightEyeAvg.x, rightEyeAvg.y);
-
     const dx = rightEye.x - leftEye.x;
     const dy = rightEye.y - leftEye.y;
     const eyeDist = Math.hypot(dx, dy);
     const angle = Math.atan2(dy, dx);
-
     const centerX = (leftEye.x + rightEye.x) / 2;
     const centerY = nose.y + (chin.y - forehead.y) * 0.02;
-
     const bagWidth = eyeDist * 3.35;
     const bagHeight = bagWidth * 1.28;
-
-    const bagStyle = bagStyleInput.value;
-    const eyeStyle = bagEyesInput.value;
-    const flavor = bagFlavorInput.value;
-
-    let base = '#c9975b';
-    let topTone = '#e0bb84';
-    let lineTone = 'rgba(90,50,22,.32)';
-    if (bagStyle === 'White Lunch') {
-      base = '#d7d2c8';
-      topTone = '#ece7de';
-      lineTone = 'rgba(80,80,80,.22)';
-    } else if (bagStyle === 'Grease Bag') {
-      base = '#b99354';
-      topTone = '#d3ad70';
-      lineTone = 'rgba(82,48,18,.34)';
-    } else if (bagStyle === 'Recycle Stamp') {
-      base = '#c79b5c';
-      topTone = '#ddb778';
-      lineTone = 'rgba(68,44,22,.28)';
-    }
-
-    bagCtx.save();
-    bagCtx.translate(centerX, centerY);
-    bagCtx.rotate(angle);
-    bagCtx.translate(-bagWidth / 2, -bagHeight * 0.34);
-
-    const grad = bagCtx.createLinearGradient(0, 0, bagWidth, bagHeight);
-    grad.addColorStop(0, topTone);
-    grad.addColorStop(0.42, base);
-    grad.addColorStop(1, '#a77542');
-    bagCtx.fillStyle = grad;
-
-    bagCtx.beginPath();
-    bagCtx.moveTo(bagWidth * 0.15, 0);
-    bagCtx.lineTo(bagWidth * 0.85, 0);
-    bagCtx.lineTo(bagWidth, bagHeight * 0.18);
-    bagCtx.lineTo(bagWidth * 0.73, bagHeight);
-    bagCtx.lineTo(bagWidth * 0.27, bagHeight);
-    bagCtx.lineTo(0, bagHeight * 0.18);
-    bagCtx.closePath();
-    bagCtx.fill();
-
-    bagCtx.strokeStyle = lineTone;
-    bagCtx.lineWidth = Math.max(1.1, bagWidth * 0.007);
-    bagCtx.beginPath();
-    bagCtx.moveTo(bagWidth * 0.15, 0);
-    bagCtx.lineTo(bagWidth * 0.5, bagHeight * 0.14);
-    bagCtx.lineTo(bagWidth * 0.85, 0);
-    bagCtx.moveTo(0, bagHeight * 0.18);
-    bagCtx.lineTo(bagWidth * 0.5, bagHeight * 0.14);
-    bagCtx.lineTo(bagWidth, bagHeight * 0.18);
-    bagCtx.stroke();
-
-    // wrinkles / flavor
-    if (flavor === 'Wrinkled' || flavor === 'Grease' || flavor === 'Scribble' || flavor === 'Tape') {
-      bagCtx.globalAlpha = 0.18;
-      bagCtx.strokeStyle = 'rgba(60,35,14,.55)';
-      for (let i = 0; i < 8; i++) {
-        const x1 = bagWidth * (0.16 + Math.random() * 0.68);
-        const y1 = bagHeight * (0.18 + Math.random() * 0.62);
-        const x2 = x1 + (Math.random() - 0.5) * bagWidth * 0.22;
-        const y2 = y1 + (Math.random() - 0.5) * bagHeight * 0.18;
-        bagCtx.beginPath();
-        bagCtx.moveTo(x1, y1);
-        bagCtx.lineTo(x2, y2);
-        bagCtx.stroke();
-      }
-      bagCtx.globalAlpha = 1;
-    }
-
-    if (flavor === 'Tape') {
-      bagCtx.fillStyle = 'rgba(220,220,210,.72)';
-      bagCtx.fillRect(bagWidth * 0.12, bagHeight * 0.58, bagWidth * 0.18, bagHeight * 0.05);
-    }
-    if (flavor === 'Grease') {
-      bagCtx.fillStyle = 'rgba(84,56,24,.16)';
-      bagCtx.beginPath();
-      bagCtx.ellipse(bagWidth * 0.68, bagHeight * 0.54, bagWidth * 0.13, bagHeight * 0.07, 0.2, 0, Math.PI * 2);
-      bagCtx.fill();
-    }
-    if (flavor === 'Scribble') {
-      bagCtx.strokeStyle = 'rgba(44,30,20,.85)';
-      bagCtx.lineWidth = Math.max(1.4, bagWidth * 0.006);
-      bagCtx.beginPath();
-      bagCtx.moveTo(bagWidth * 0.18, bagHeight * 0.23);
-      bagCtx.lineTo(bagWidth * 0.3, bagHeight * 0.19);
-      bagCtx.lineTo(bagWidth * 0.42, bagHeight * 0.24);
-      bagCtx.stroke();
-    }
-
-    // eye holes
-    const eyeY = bagHeight * 0.46;
-    drawEyeHole(bagCtx, bagWidth * 0.36, eyeY, bagWidth * 0.07, bagHeight * 0.06, eyeStyle);
-    drawEyeHole(bagCtx, bagWidth * 0.64, eyeY, eyeStyle === 'One small' ? bagWidth * 0.095 : bagWidth * 0.07, bagHeight * 0.06, eyeStyle === 'One small' ? 'Wide' : eyeStyle);
-
-    // recycle stamp for that style
-    if (bagStyle === 'Recycle Stamp') {
-      bagCtx.fillStyle = 'rgba(28,28,28,.72)';
-      bagCtx.font = `${Math.max(10, bagWidth * 0.038)}px Arial`;
-      bagCtx.textAlign = 'center';
-      bagCtx.fillText('RECYCLE THIS BAG', bagWidth * 0.5, bagHeight * 0.18);
-    }
-
-    bagCtx.restore();
+    drawBagAt(centerX, centerY, bagWidth, bagHeight, angle);
   }
 
-  const faceMesh = new FaceMesh({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
-  });
+  async function initTracking() {
+    if (faceMesh) return;
+    faceMesh = new FaceMesh({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+    });
+    faceMesh.setOptions({
+      maxNumFaces: 1,
+      refineLandmarks: true,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5
+    });
+    faceMesh.onResults((results) => {
+      if (!bagRunning) return;
+      if (!results.multiFaceLandmarks || !results.multiFaceLandmarks.length) {
+        lastLandmarks = null;
+        drawFallbackBag();
+        return;
+      }
+      lastLandmarks = results.multiFaceLandmarks[0];
+      drawTrackedBag(lastLandmarks);
+    });
+    trackingReady = true;
+  }
 
-  faceMesh.setOptions({
-    maxNumFaces: 1,
-    refineLandmarks: true,
-    minDetectionConfidence: 0.5,
-    minTrackingConfidence: 0.5
-  });
-
-  faceMesh.onResults((results) => {
-    lastResults = results;
-    if (!results.multiFaceLandmarks || !results.multiFaceLandmarks.length) {
-      resizeBagCanvas();
-      const rect = bagVideo.getBoundingClientRect();
-      bagCtx.clearRect(0, 0, rect.width, rect.height);
-      return;
+  async function processFrame() {
+    if (!bagRunning) return;
+    if (trackingReady && !trackingBusy && bagVideo.readyState >= 2) {
+      trackingBusy = true;
+      try {
+        await faceMesh.send({ image: bagVideo });
+      } catch (err) {
+        trackingReady = false;
+        drawFallbackBag();
+        setBagStatus('Live camera is working. Tracking library missed, so fallback bag overlay is showing.');
+      } finally {
+        trackingBusy = false;
+      }
+    } else if (!trackingReady) {
+      drawFallbackBag();
     }
-    drawBagOverlay(results.multiFaceLandmarks[0]);
-  });
-
-  async function startBagCamera() {
-    stopBagCamera();
-    bagPlaceholder.style.display = 'none';
-    bagStatus.textContent = 'Opening bag camera...';
-    bagVideo.style.transform = 'scaleX(-1)';
-    bagCanvas.style.transform = 'scaleX(-1)';
-    try {
-      bagCamera = new Camera(bagVideo, {
-        onFrame: async () => {
-          await faceMesh.send({ image: bagVideo });
-        },
-        width: 640,
-        height: 480,
-        facingMode: bagFacing
-      });
-      await bagCamera.start();
-      bagRunning = true;
-      bagStatus.textContent = 'Bag camera live. The bag should track your face now.';
-    } catch (err) {
-      bagStatus.textContent = 'Bag camera blocked or unavailable on this browser.';
-      bagRunning = false;
-    }
+    rafId = requestAnimationFrame(processFrame);
   }
 
   function stopBagCamera() {
-    try {
-      if (bagCamera && bagCamera.video && bagCamera.video.srcObject) {
-        bagCamera.video.srcObject.getTracks().forEach(t => t.stop());
-      }
-    } catch {}
+    bagRunning = false;
+    cancelAnimationFrame(rafId);
+    rafId = 0;
     if (bagStream) {
       bagStream.getTracks().forEach(t => t.stop());
       bagStream = null;
     }
-    bagRunning = false;
+    bagVideo.pause();
+    bagVideo.srcObject = null;
+    bagCtx.clearRect(0, 0, bagCanvas.width, bagCanvas.height);
+    bagPlaceholder.style.display = 'block';
+  }
+
+  async function startBagCamera() {
+    stopBagCamera();
+    bagPlaceholder.style.display = 'none';
+    setBagStatus('Requesting camera permission...');
+    try {
+      bagStream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: bagFacing },
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      });
+      bagVideo.srcObject = bagStream;
+      await bagVideo.play();
+      if (bagFacing === 'user') {
+        bagVideo.style.transform = 'scaleX(-1)';
+        bagCanvas.style.transform = 'scaleX(-1)';
+      } else {
+        bagVideo.style.transform = 'none';
+        bagCanvas.style.transform = 'none';
+      }
+      resizeBagCanvas();
+      drawFallbackBag();
+      try {
+        await initTracking();
+        setBagStatus('Camera is live. Bag overlay should sit on your face now.');
+      } catch (err) {
+        trackingReady = false;
+        setBagStatus('Camera is live. Tracking did not load, so fallback bag overlay is showing.');
+      }
+      bagRunning = true;
+      processFrame();
+    } catch (err) {
+      setBagStatus('Camera permission got blocked or failed. This should have asked for camera access.');
+      bagPlaceholder.style.display = 'block';
+    }
   }
 
   function captureBagAvatar() {
     if (!bagVideo.videoWidth || !bagVideo.videoHeight) {
-      bagStatus.textContent = 'Open the bag camera first.';
+      setBagStatus('Open the bag camera first.');
       return;
     }
     const out = document.createElement('canvas');
     out.width = bagVideo.videoWidth;
     out.height = bagVideo.videoHeight;
     const octx = out.getContext('2d');
-
-    // mirror final capture to match live selfie view
     octx.save();
-    octx.translate(out.width, 0);
-    octx.scale(-1, 1);
+    if (bagFacing === 'user') {
+      octx.translate(out.width, 0);
+      octx.scale(-1, 1);
+    }
     octx.drawImage(bagVideo, 0, 0, out.width, out.height);
     octx.drawImage(bagCanvas, 0, 0, out.width, out.height);
     octx.restore();
-
     const dataUrl = out.toDataURL('image/png');
     bagAvatarPreview.src = dataUrl;
     bagAvatarPreview.style.display = 'block';
     bagAvatarEmpty.style.display = 'none';
-
     try {
       const raw = localStorage.getItem('carltons_loadies_profile_v10');
       const parsed = raw ? JSON.parse(raw) : {};
       parsed.avatarDataUrl = dataUrl;
       localStorage.setItem('carltons_loadies_profile_v10', JSON.stringify(parsed));
     } catch {}
-
-    bagStatus.textContent = 'Bag avatar captured. Save Bag Settings to lock it in.';
+    setBagStatus('Bag avatar captured. Save Bag Settings to lock it in.');
   }
 
   bagOpenBtn.addEventListener('click', startBagCamera);
@@ -1328,23 +1353,24 @@
   bagCaptureBtn.addEventListener('click', captureBagAvatar);
   bagStopBtn.addEventListener('click', () => {
     stopBagCamera();
-    bagStatus.textContent = 'Bag camera stopped.';
+    setBagStatus('Bag camera stopped.');
   });
 
-  bagStyleInput.addEventListener('change', () => {
-    if (lastResults?.multiFaceLandmarks?.length) drawBagOverlay(lastResults.multiFaceLandmarks[0]);
-  });
-  bagEyesInput.addEventListener('change', () => {
-    if (lastResults?.multiFaceLandmarks?.length) drawBagOverlay(lastResults.multiFaceLandmarks[0]);
-  });
-  bagFlavorInput.addEventListener('change', () => {
-    if (lastResults?.multiFaceLandmarks?.length) drawBagOverlay(lastResults.multiFaceLandmarks[0]);
+  [bagStyleInput, bagEyesInput, bagFlavorInput].forEach(el => {
+    el.addEventListener('change', () => {
+      if (lastLandmarks) drawTrackedBag(lastLandmarks);
+      else if (bagVideo.srcObject) drawFallbackBag();
+    });
   });
 
   window.addEventListener('resize', () => {
-    if (lastResults?.multiFaceLandmarks?.length) drawBagOverlay(lastResults.multiFaceLandmarks[0]);
+    if (lastLandmarks) drawTrackedBag(lastLandmarks);
+    else if (bagVideo.srcObject) drawFallbackBag();
   });
 </script>
+</body>
+</html>
+
 
 </body>
 </html>
