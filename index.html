@@ -167,15 +167,19 @@
     padding:8px 12px; border-radius:999px; border:1px solid rgba(213,175,115,.22); background:rgba(213,175,115,.06); color:#f4e0bf; font-size:.86rem; font-weight:800;
   }
   .comicStage {
-    margin-top:14px; background:#eee7d8; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:16px; overflow:auto;
+    margin-top:14px; background:#ece6d7; border:1px solid rgba(255,255,255,.08); border-radius:18px; padding:18px; overflow:auto;
     box-shadow:inset 0 0 0 1px rgba(0,0,0,.04);
   }
   .comicStageInner {
-    min-width:860px; display:grid; grid-template-columns:1.22fr .82fr 1.52fr; gap:16px; align-items:stretch;
+    min-width:900px; display:grid; grid-template-columns:1.18fr .82fr 1.56fr; gap:18px; align-items:stretch;
   }
   .comicPanel {
-    position:relative; min-height:330px; background:#f8f4ea; border:4px solid #131313; overflow:hidden;
-    box-shadow:0 5px 0 rgba(0,0,0,.12);
+    position:relative; min-height:348px; background:#f8f4ea; border:4px solid #131313; overflow:hidden;
+    box-shadow:0 6px 0 rgba(0,0,0,.10);
+  }
+  .comicPanel::before {
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.18;
+    background:radial-gradient(circle at 50% 45%, transparent 52%, rgba(0,0,0,.08) 100%);
   }
   .comicPanel::after {
     content:""; position:absolute; inset:0; pointer-events:none; opacity:.42;
@@ -186,13 +190,18 @@
     background-position:0 0, 2px 3px;
   }
   .comicBubble {
-    position:absolute; top:14px; max-width:72%; background:#fffdf8; color:#111; z-index:2;
-    border:4px solid #131313; border-radius:22px; padding:10px 14px; font-size:1rem; font-weight:900; line-height:1.18;
+    position:absolute; top:14px; max-width:74%; background:#fffdf8; color:#111; z-index:2;
+    border:4px solid #131313; border-radius:24px; padding:11px 15px; font-size:1.06rem; font-weight:900; line-height:1.16;
     box-shadow:0 2px 0 rgba(0,0,0,.08);
   }
   .comicBubble.left { left:14px; }
   .comicBubble.right { right:14px; }
   .comicBubble.small { max-width:34%; }
+  .comicBubble::after {
+    content:""; position:absolute; bottom:-15px; width:16px; height:16px; background:#fffdf8; border-bottom:4px solid #131313;
+  }
+  .comicBubble.left::after { left:44px; border-right:4px solid #131313; transform:skewX(-28deg) rotate(22deg); }
+  .comicBubble.right::after { right:46px; border-left:4px solid #131313; transform:skewX(28deg) rotate(-22deg); }
   .comicCanvas { position:absolute; inset:0; width:100%; height:100%; }
   .stripHintList { display:grid; gap:10px; }
   .stripHintCard {
@@ -1174,9 +1183,11 @@
   function comicWobble(ctx, x1, y1, x2, y2) {
     const midX = (x1 + x2) / 2;
     const midY = (y1 + y2) / 2;
+    const driftX = (Math.random() * 2 - 1) * 1.8;
+    const driftY = (Math.random() * 2 - 1) * 1.8;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
-    ctx.quadraticCurveTo(midX + 2, midY + 2, x2, y2);
+    ctx.quadraticCurveTo(midX + driftX, midY + driftY, x2, y2);
     ctx.stroke();
   }
 
@@ -1257,22 +1268,23 @@
     }
   }
 
-  function comicBody(ctx, x, y, gesture = 'open', small = false, type = 'normal') {
-    const scale = small ? 0.68 : 1;
-    const torsoBottom = y + 74 * scale;
-    const legBottom = y + 118 * scale;
+  function comicBody(ctx, x, y, gesture = 'open', small = false, type = 'normal', dir = 'right') {
+    const scale = small ? 0.66 : 1;
+    const torsoBottom = y + 76 * scale;
+    const legBottom = y + 122 * scale;
+    const armBias = dir === 'left' ? -1 : 1;
     comicWobble(ctx, x, y + 15, x, torsoBottom);
 
     if (gesture === 'open') {
-      comicWobble(ctx, x, y + 34, x - 30 * scale, y + 25 * scale);
-      comicWobble(ctx, x, y + 34, x + 30 * scale, y + 25 * scale);
-      comicHand(ctx, x - 30 * scale, y + 25 * scale, 'open', true);
-      comicHand(ctx, x + 30 * scale, y + 25 * scale, 'open', false);
+      comicWobble(ctx, x, y + 34, x - 32 * scale, y + 24 * scale);
+      comicWobble(ctx, x, y + 34, x + 32 * scale, y + 24 * scale);
+      comicHand(ctx, x - 32 * scale, y + 24 * scale, 'open', true);
+      comicHand(ctx, x + 32 * scale, y + 24 * scale, 'open', false);
     } else if (gesture === 'point') {
-      comicWobble(ctx, x, y + 34, x + 38 * scale, y + 30 * scale);
-      comicWobble(ctx, x, y + 38, x - 12 * scale, y + 56 * scale);
-      comicHand(ctx, x + 38 * scale, y + 30 * scale, 'point', false);
-      comicHand(ctx, x - 12 * scale, y + 56 * scale, 'drop', true);
+      comicWobble(ctx, x, y + 34, x + (40 * scale * armBias), y + 30 * scale);
+      comicWobble(ctx, x, y + 38, x - (12 * scale * armBias), y + 56 * scale);
+      comicHand(ctx, x + (40 * scale * armBias), y + 30 * scale, 'point', armBias < 0);
+      comicHand(ctx, x - (12 * scale * armBias), y + 56 * scale, 'drop', armBias > 0);
     } else {
       comicWobble(ctx, x, y + 36, x - 11 * scale, y + 58 * scale);
       comicWobble(ctx, x, y + 36, x + 11 * scale, y + 58 * scale);
@@ -1284,18 +1296,23 @@
     comicWobble(ctx, x, torsoBottom, x + 13 * scale, legBottom);
   }
 
-  function comicDrawChar(ctx, x, y, type, gesture, small = false, sad = false) {
-    comicHead(ctx, x, y, type, 'right', sad);
-    comicBody(ctx, x, y, gesture, small, type);
+  function comicDrawChar(ctx, x, y, type, gesture, small = false, sad = false, dir = 'right') {
+    comicHead(ctx, x, y, type, dir, sad);
+    comicBody(ctx, x, y, gesture, small, type, dir);
   }
 
   function comicSplit(joke) {
     const raw = String(joke || '').replace(/\s+/g, ' ').trim();
+    if (!raw) return ['say the thing', 'and now what?', 'yeah'];
+    if (/still feels off/i.test(raw)) {
+      const lead = raw.replace(/\s+and it still feels off\??/i, '');
+      return [lead || 'you ever feel like', 'and it still feels off?', 'yeah'];
+    }
     const words = raw.split(' ');
-    if (words.length < 7) return [raw || 'say the thing', 'and now what?', 'yeah'];
+    if (words.length < 7) return [raw, 'and now what?', 'yeah'];
     return [
-      words.slice(0, 6).join(' '),
-      words.slice(6).join(' '),
+      words.slice(0, Math.min(7, Math.max(4, Math.ceil(words.length * 0.58)))).join(' '),
+      words.slice(Math.min(7, Math.max(4, Math.ceil(words.length * 0.58)))).join(' '),
       'yeah'
     ];
   }
@@ -1319,20 +1336,20 @@
     const canvases = Array.from(host.querySelectorAll('canvas'));
     const ctx1 = canvases[0].getContext('2d');
     ctx1.lineCap = 'round'; ctx1.lineJoin = 'round';
-    comicDrawChar(ctx1, 104, 178, 'normal', 'open', false, false);
-    comicDrawChar(ctx1, 248, 180, 'bag', 'drop', false, false);
-    ctx1.strokeStyle = 'rgba(0,0,0,.16)'; ctx1.lineWidth = 2; comicWobble(ctx1, 18, 287, 330, 287);
+    comicDrawChar(ctx1, 96, 188, 'normal', 'open', false, false, 'right');
+    comicDrawChar(ctx1, 246, 188, 'bag', 'drop', false, false, 'left');
+    ctx1.strokeStyle = 'rgba(0,0,0,.15)'; ctx1.lineWidth = 2; comicWobble(ctx1, 18, 296, 330, 296);
 
     const ctx2 = canvases[1].getContext('2d');
     ctx2.lineCap = 'round'; ctx2.lineJoin = 'round';
-    comicDrawChar(ctx2, 122, 184, 'normal', 'drop', false, false);
-    comicDrawChar(ctx2, 236, 180, 'bag', 'point', false, false);
-    ctx2.strokeStyle = 'rgba(0,0,0,.16)'; ctx2.lineWidth = 2; comicWobble(ctx2, 18, 289, 330, 289);
+    comicDrawChar(ctx2, 110, 194, 'normal', 'drop', false, false, 'right');
+    comicDrawChar(ctx2, 238, 186, 'bag', 'point', false, false, 'left');
+    ctx2.strokeStyle = 'rgba(0,0,0,.15)'; ctx2.lineWidth = 2; comicWobble(ctx2, 18, 298, 330, 298);
 
     const ctx3 = canvases[2].getContext('2d');
     ctx3.lineCap = 'round'; ctx3.lineJoin = 'round';
-    comicDrawChar(ctx3, 212, 246, 'normal', 'drop', true, true);
-    ctx3.strokeStyle = 'rgba(0,0,0,.16)'; ctx3.lineWidth = 2; comicWobble(ctx3, 18, 301, 330, 301);
+    comicDrawChar(ctx3, 208, 258, 'normal', 'drop', true, true, 'right');
+    ctx3.strokeStyle = 'rgba(0,0,0,.13)'; ctx3.lineWidth = 2; comicWobble(ctx3, 18, 312, 330, 312);
   }
 
   document.getElementById('comicRenderBtn')?.addEventListener('click', renderComicLab);
